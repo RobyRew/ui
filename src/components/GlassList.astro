@@ -1,0 +1,38 @@
+---
+/** 06 · Inset list — grouped rows, hairlines inset from the edge. Densest text format. */
+export interface Row { glyph?: string; label: string; value?: string; href?: string }
+interface Props { rows: Row[]; class?: string }
+const { rows, class: cls = '' } = Astro.props;
+---
+<ul class:list={['rw-list', 'rw-glass', cls]}>
+  {rows.map((r) => {
+    const Tag = r.href ? 'a' : 'span';
+    return (
+      <li>
+        <Tag href={r.href} class="rw-list__row">
+          {r.glyph && <span class="rw-list__icon rw-gl" aria-hidden="true">{r.glyph}</span>}
+          <span class="rw-list__label">{r.label}</span>
+          {r.value && <span class="rw-list__value">{r.value}</span>}
+          {r.href && <span class="rw-list__chev rw-gl" aria-hidden="true">›</span>}
+        </Tag>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  /* Concentric: 20px outer minus 8px padding gives 12px rows. */
+  .rw-list { --r: 20px; padding: 8px; margin: 0; list-style: none; display: flex; flex-direction: column; }
+  .rw-list__row { display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: 12px;
+    font-size: .82rem; color: var(--g-ink); text-decoration: none; }
+  a.rw-list__row:hover { background: rgb(var(--rim-rgb) / .08); }
+  a.rw-list__row:focus-visible { outline: 2px solid var(--g-ink); outline-offset: -2px; }
+  /* Separator inset from the edge, drawn on the row rather than between them. */
+  .rw-list li + li .rw-list__row { box-shadow: inset 0 1px 0 rgb(var(--rim-rgb) / .1); }
+  .rw-list__icon { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center;
+    background: rgb(var(--rim-rgb) / .14); font-size: .75rem; flex: 0 0 auto; }
+  .rw-list__value { margin-left: auto; color: var(--g-ink-mute); }
+  .rw-list__chev { color: var(--g-ink-mute); }
+  .rw-list__value + .rw-list__chev { margin-left: 0; }
+  .rw-list__label + .rw-list__chev { margin-left: auto; }
+</style>

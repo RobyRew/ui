@@ -1,0 +1,28 @@
+---
+/** 08 · Rail — the only vertical format. Glyph-only, so it survives at 56px wide. */
+export interface RailItem { glyph: string; label: string; href: string; current?: boolean }
+interface Props { items: RailItem[]; class?: string }
+const { items, class: cls = '' } = Astro.props;
+---
+<nav class:list={['rw-rail', 'rw-glass', cls]} aria-label="Sections">
+  {items.map((it) =>
+    it.glyph === '—'
+      ? <span class="rw-rail__div" aria-hidden="true"></span>
+      : (
+        <a href={it.href} title={it.label} aria-label={it.label}
+           aria-current={it.current ? 'page' : undefined}
+           class:list={['rw-rail__item', 'rw-gl', { 'is-current': it.current }]}>{it.glyph}</a>
+      )
+  )}
+</nav>
+
+<style>
+  .rw-rail { --r: 22px; padding: 10px; display: flex; flex-direction: column; gap: 5px; align-items: center; width: max-content; }
+  .rw-rail__item { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center;
+    font-size: 1rem; color: var(--g-ink-dim); text-decoration: none; transition: color .18s, background .18s; }
+  .rw-rail__item:hover { color: var(--g-ink); }
+  .rw-rail__item.is-current { color: var(--g-ink); background: rgb(var(--rim-rgb) / .17);
+    box-shadow: inset 0 0 0 1px rgb(var(--rim-rgb) / .2); }
+  .rw-rail__item:focus-visible { outline: 2px solid var(--g-ink); outline-offset: 2px; }
+  .rw-rail__div { width: 20px; height: 1px; background: rgb(var(--rim-rgb) / .16); margin: 4px 0; }
+</style>

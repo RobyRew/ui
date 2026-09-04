@@ -1,0 +1,23 @@
+---
+/** 03 · HUD — smallest and densest. Transient overlay; the one place a large
+ *  radius on a small box reads correctly. */
+interface Props { glyph: string; caption: string; value: number; class?: string }
+const { glyph, caption, value, class: cls = '' } = Astro.props;
+const pct = Math.max(0, Math.min(100, value));
+---
+<div class:list={['rw-hud', 'rw-glass', cls]} role="status" aria-live="polite">
+  <span class="rw-hud__glyph rw-gl" aria-hidden="true">{glyph}</span>
+  <div class="rw-hud__track" role="progressbar" aria-valuenow={pct} aria-valuemin="0" aria-valuemax="100" aria-label={caption}>
+    <div class="rw-hud__fill" style={`width:${pct}%`}></div>
+  </div>
+  <span class="rw-hud__cap">{caption}</span>
+</div>
+
+<style>
+  .rw-hud { --r: 26px; width: 168px; padding: 20px; display: flex; flex-direction: column;
+    align-items: center; gap: 14px; }
+  .rw-hud__glyph { font-size: 2.5rem; color: var(--g-ink); }
+  .rw-hud__track { width: 100%; height: 6px; border-radius: 99px; background: rgb(var(--rim-rgb) / .16); overflow: hidden; }
+  .rw-hud__fill { height: 100%; border-radius: 99px; background: rgb(var(--rim-rgb) / .85); }
+  .rw-hud__cap { font: 500 .68rem/1 var(--g-mono); letter-spacing: .1em; color: var(--g-ink-mute); }
+</style>

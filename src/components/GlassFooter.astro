@@ -1,0 +1,35 @@
+---
+/** 11 · Footer — the counterpart to GlassBar. Not in the ten specimens; added
+ *  because the shared navbar/footer pair was the original point of the package. */
+export interface FooterGroup { title: string; links: { label: string; href: string }[] }
+interface Props { groups: FooterGroup[]; note?: string; class?: string }
+const { groups, note, class: cls = '' } = Astro.props;
+---
+<footer class:list={['rw-footer', 'rw-glass', cls]}>
+  <div class="rw-footer__grid">
+    {groups.map((g) => (
+      <nav class="rw-footer__col" aria-label={g.title}>
+        <h2 class="rw-footer__title">{g.title}</h2>
+        <ul>{g.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+      </nav>
+    ))}
+  </div>
+  <div class="rw-footer__base">
+    {note && <p class="rw-footer__note">{note}</p>}
+    <slot />
+  </div>
+</footer>
+
+<style>
+  .rw-footer { --r: 22px; padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+  .rw-footer__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; }
+  .rw-footer__title { margin: 0 0 8px; font: 500 .68rem/1 var(--g-mono); letter-spacing: .12em;
+    text-transform: uppercase; color: var(--g-ink-mute); }
+  .rw-footer__col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .rw-footer__col a { font-size: .82rem; color: var(--g-ink-dim); text-decoration: none; }
+  .rw-footer__col a:hover { color: var(--g-ink); }
+  .rw-footer__col a:focus-visible { outline: 2px solid var(--g-ink); outline-offset: 2px; }
+  .rw-footer__base { display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding-top: 14px; box-shadow: inset 0 1px 0 rgb(var(--rim-rgb) / .12); }
+  .rw-footer__note { margin: 0; font-size: .74rem; color: var(--g-ink-mute); }
+</style>

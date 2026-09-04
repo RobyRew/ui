@@ -1,0 +1,27 @@
+---
+/** 09 · Auth card — inputs are recessed rather than raised. Exactly one filled
+ *  control, and it is the primary action. */
+interface Props { title: string; action?: string; alt?: string; method?: string; class?: string }
+const { title, action = 'Continue', alt, method = 'post', class: cls = '' } = Astro.props;
+---
+<form class:list={['rw-auth', 'rw-glass', cls]} method={method}>
+  <h2 class="rw-auth__title">{title}</h2>
+  <slot />
+  <button type="submit" class="rw-auth__go">{action}</button>
+  {alt && <p class="rw-auth__alt">{alt}</p>}
+</form>
+
+<style>
+  .rw-auth { --r: 24px; padding: 20px; display: flex; flex-direction: column; gap: 11px; }
+  .rw-auth__title { margin: 0; font-size: 1.1rem; font-weight: 700; letter-spacing: -.015em; color: var(--g-ink); }
+  /* Recessed, not raised: inset shadow and no fill. */
+  .rw-auth :global(input) { width: 100%; padding: 11px 13px; border: 0; border-radius: 13px;
+    background: rgb(var(--rim-rgb) / .1); font: 400 .82rem/1 var(--g-font); color: var(--g-ink);
+    box-shadow: inset 0 0 0 1px rgb(var(--rim-rgb) / .13); outline: none; }
+  .rw-auth :global(input::placeholder) { color: var(--g-ink-mute); }
+  .rw-auth :global(input:focus) { box-shadow: inset 0 0 0 1.5px rgb(var(--rim-rgb) / .42); }
+  .rw-auth__go { font: 700 .82rem/1 var(--g-font); color: #0b0d12; cursor: pointer; padding: 12px;
+    border: 0; border-radius: 13px; background: rgb(var(--rim-rgb) / .88); }
+  .rw-auth__go:focus-visible { outline: 2px solid var(--g-ink); outline-offset: 2px; }
+  .rw-auth__alt { margin: 0; text-align: center; font-size: .7rem; color: var(--g-ink-mute); }
+</style>

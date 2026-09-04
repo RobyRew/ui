@@ -1,0 +1,40 @@
+---
+/** 04 · Player — media format. The artwork is opaque and sits UNDER the glass:
+ *  content layer, never glass on glass. */
+interface Props { title: string; subtitle?: string; progress?: number;
+  artwork?: string; playing?: boolean; class?: string }
+const { title, subtitle, progress = 0, artwork, playing = true, class: cls = '' } = Astro.props;
+const pct = Math.max(0, Math.min(100, progress));
+---
+<div class:list={['rw-player', 'rw-glass', cls]}>
+  <div class="rw-player__art" style={artwork ? `background-image:url(${artwork})` : undefined} aria-hidden="true"></div>
+  <div class="rw-player__meta">
+    <p class="rw-player__title">{title}</p>
+    {subtitle && <p class="rw-player__sub">{subtitle}</p>}
+    <div class="rw-player__bar" role="progressbar" aria-valuenow={pct} aria-valuemin="0" aria-valuemax="100" aria-label="Progress">
+      <i style={`width:${pct}%`}></i>
+    </div>
+  </div>
+  <div class="rw-player__transport">
+    <button type="button" class="rw-gl" aria-label="Previous">⏮</button>
+    <button type="button" class="rw-gl" aria-label={playing ? 'Pause' : 'Play'}>{playing ? '⏸' : '⏵'}</button>
+    <button type="button" class="rw-gl" aria-label="Next">⏭</button>
+  </div>
+</div>
+
+<style>
+  .rw-player { --r: 22px; padding: 13px; display: flex; gap: 13px; align-items: center; }
+  .rw-player__art { width: 62px; height: 62px; border-radius: 14px; flex: 0 0 auto; background-size: cover;
+    background-color: rgb(var(--rim-rgb) / .2); box-shadow: inset 0 0 0 1px rgb(var(--rim-rgb) / .2); }
+  .rw-player__meta { min-width: 0; flex: 1 1 auto; }
+  .rw-player__title, .rw-player__sub { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rw-player__title { font-size: .9rem; font-weight: 700; color: var(--g-ink); }
+  .rw-player__sub { font-size: .78rem; color: var(--g-ink-dim); }
+  .rw-player__bar { margin-top: 7px; height: 4px; border-radius: 99px; background: rgb(var(--rim-rgb) / .16); }
+  .rw-player__bar i { display: block; height: 100%; border-radius: 99px; background: rgb(var(--rim-rgb) / .8); }
+  .rw-player__transport { display: flex; gap: 4px; align-items: center; }
+  .rw-player__transport button { background: none; border: 0; cursor: pointer; color: var(--g-ink);
+    font-size: 1.05rem; padding: 6px; border-radius: 9px; }
+  .rw-player__transport button:hover { background: rgb(var(--rim-rgb) / .12); }
+  .rw-player__transport button:focus-visible { outline: 2px solid var(--g-ink); outline-offset: 2px; }
+</style>

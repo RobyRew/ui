@@ -1,0 +1,45 @@
+---
+/** 01 · Command bar — the site navbar. Widest, lowest density. */
+export interface Link { label: string; href: string; current?: boolean }
+interface Props {
+  links: Link[];
+  brandHref?: string;
+  action?: { label: string; href: string };
+  /** Shown right-aligned as a hint, e.g. "⌘K". Plain text, no icon font. */
+  hint?: string;
+  class?: string;
+}
+const { links, brandHref = '/', action, hint, class: cls = '' } = Astro.props;
+---
+<nav class:list={['rw-bar', 'rw-glass', cls]} aria-label="Primary">
+  <a class="rw-bar__brand" href={brandHref} aria-label="Home"><slot name="brand" /></a>
+  <ul class="rw-bar__links">
+    {links.map((l) => (
+      <li>
+        <a href={l.href} class:list={['rw-bar__link', { 'is-current': l.current }]}
+           aria-current={l.current ? 'page' : undefined}>{l.label}</a>
+      </li>
+    ))}
+  </ul>
+  {hint && <span class="rw-bar__hint rw-gl" aria-hidden="true">{hint}</span>}
+  {action && <a class="rw-bar__action" href={action.href}>{action.label}</a>}
+</nav>
+
+<style>
+  /* Concentric: the pill is 999px, so inner pills are 999px minus the padding. */
+  .rw-bar { --r: 999px; display: flex; align-items: center; gap: 7px; padding: 9px; }
+  .rw-bar__brand { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 999px; flex: 0 0 auto;
+    background: linear-gradient(145deg, rgb(var(--rim-rgb) / .9), rgb(var(--rim-rgb) / .35)); color: inherit; }
+  .rw-bar__links { display: flex; gap: 2px; margin: 0 auto 0 0; padding: 0; list-style: none; }
+  .rw-bar__link { display: block; font-size: .78rem; font-weight: 600; text-decoration: none;
+    color: var(--g-ink-dim); padding: 5px 11px; border-radius: 990px; transition: color .18s, background .18s; }
+  .rw-bar__link:hover { color: var(--g-ink); }
+  .rw-bar__link.is-current { color: var(--g-ink); background: rgb(var(--rim-rgb) / .16); }
+  .rw-bar__link:focus-visible, .rw-bar__action:focus-visible, .rw-bar__brand:focus-visible {
+    outline: 2px solid var(--g-ink); outline-offset: 2px; }
+  .rw-bar__hint { font: 500 .68rem/1 var(--g-mono); color: var(--g-ink-mute);
+    border: 1px solid rgb(var(--rim-rgb) / .18); border-radius: 6px; padding: 4px 6px; }
+  .rw-bar__action { font-size: .78rem; font-weight: 700; color: var(--g-ink); text-decoration: none;
+    padding: 6px 13px; border-radius: 999px; background: rgb(var(--rim-rgb) / .18);
+    box-shadow: inset 0 0 0 1px rgb(var(--rim-rgb) / .2); }
+</style>

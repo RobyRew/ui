@@ -1,0 +1,17 @@
+{
+  "name": "@robyrew/ui",
+  "version": "0.1.0",
+  "description": "Liquid-glass component set (Obsidian) shared across the RobyRew sites",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/RobyRew/ui.git" },
+  "files": ["src"],
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/tokens.css",
+    "./components/*": "./src/components/*"
+  },
+  "peerDependencies": { "astro": ">=5" },
+  "keywords": ["astro", "liquid-glass", "design-system"],
+  "sideEffects": ["*.css"]
+}

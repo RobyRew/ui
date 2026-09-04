@@ -1,0 +1,146 @@
+/* @robyrew/ui — Obsidian
+ *
+ * Import once, at the app's root layout:
+ *     import '@robyrew/ui/tokens.css';
+ *
+ * DARK-FIRST ON PURPOSE. Smoked glass only reads over a dark ground, so the bare
+ * :root carries the dark palette and light is the variant. The three theme states
+ * are all covered: an explicit data-theme wins in either direction, and the
+ * unstamped document (which is what most visitors get) falls to prefers-color-scheme.
+ *
+ * Obsidian keeps its own material base in BOTH themes — it does not become white
+ * glass when the OS turns light. That is the identity of this direction, not an
+ * oversight.
+ */
+
+:root {
+  /* Page — override these to fit the host site. */
+  --ground:      #08090d;
+  --ground-2:    #0e1016;
+  --ink:         #eef1f7;
+  --ink-2:       #9aa2b4;
+  --ink-3:       #6b7385;
+  --hair:        #1e2029;
+  --hair-soft:   #14161d;
+  --panel:       #101219;
+  --accent:      #7aa2ff;
+  --accent-soft: rgb(122 162 255 / .13);
+
+  /* Material. A different "taste" is only a different set of these eleven. */
+  --glass-rgb:  26 29 38;
+  --rim-rgb:    190 205 235;
+  --shadow-rgb: 0 0 0;
+  --t-alpha:    .52;
+  --t-blur:     30px;
+  --t-sat:      140%;
+  --t-rim:      .30;
+  --t-sh-y:     16px;
+  --t-sh-blur:  38px;
+  --t-sh-a:     .34;
+
+  /* Ink ON glass. Separate from page ink: the backdrop behind glass is not the page. */
+  --g-ink:      #f4f6fb;
+  --g-ink-dim:  #a4adc0;
+  --g-ink-mute: #737c8f;
+
+  --g-font: Manrope, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --g-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --g-glyph: "SF Pro Text", -apple-system, "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ground:      #e8eaf0;
+    --ground-2:    #dfe2ea;
+    --ink:         #14161c;
+    --ink-2:       #4d5464;
+    --ink-3:       #7c8394;
+    --hair:        #ced3de;
+    --hair-soft:   #dfe3ec;
+    --panel:       #ffffff;
+    --accent:      #2b6ef6;
+    --accent-soft: rgb(43 110 246 / .10);
+    --t-sh-a:      .20;
+  }
+}
+
+:root[data-theme="light"] {
+  --ground:      #e8eaf0;
+  --ground-2:    #dfe2ea;
+  --ink:         #14161c;
+  --ink-2:       #4d5464;
+  --ink-3:       #7c8394;
+  --hair:        #ced3de;
+  --hair-soft:   #dfe3ec;
+  --panel:       #ffffff;
+  --accent:      #2b6ef6;
+  --accent-soft: rgb(43 110 246 / .10);
+  --t-sh-a:      .20;
+}
+
+/* ── The material ─────────────────────────────────────────────────
+ * One class. Every component below is this plus a shape.
+ * --r is the component's own radius so nesting stays concentric.
+ */
+.rw-glass {
+  position: relative;
+  border-radius: var(--r, 20px);
+  color: var(--g-ink);
+  font-family: var(--g-font);
+  background: rgb(var(--glass-rgb) / var(--t-alpha));
+  backdrop-filter: blur(var(--t-blur)) saturate(var(--t-sat));
+  -webkit-backdrop-filter: blur(var(--t-blur)) saturate(var(--t-sat));
+  box-shadow:
+    inset 0 1px 0 0 rgb(var(--rim-rgb) / var(--t-rim)),
+    inset 0 0 0 1px rgb(var(--rim-rgb) / calc(var(--t-rim) * .34)),
+    0 var(--t-sh-y) var(--t-sh-blur) rgb(var(--shadow-rgb) / var(--t-sh-a));
+}
+
+/* Lensing. Blur alone reads as frosted plastic; the refracted edge — brighter at
+ * the top where the light is — is what makes it read as glass. */
+.rw-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(168deg,
+    rgb(var(--rim-rgb) / calc(var(--t-rim) * 1.6)) 0%,
+    rgb(var(--rim-rgb) / 0) 40%,
+    rgb(var(--rim-rgb) / 0) 60%,
+    rgb(var(--rim-rgb) / calc(var(--t-rim) * .75)) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Glyphs are plain UTF-8 text. Forcing text presentation stops a platform
+ * swapping one for a colour emoji — ⏸ and ⚙ are the usual offenders. */
+.rw-gl {
+  font-family: var(--g-glyph);
+  font-variant-emoji: text;
+  font-feature-settings: "liga" 0;
+  line-height: 1;
+}
+
+/* Backdrop helpers. Glass over a flat fill looks like plastic; these give it
+ * something to refract. Optional — a real photograph is better. */
+.rw-bp-aurora {
+  background:
+    radial-gradient(120% 90% at 12% 8%,  #ff9d6c 0%, transparent 55%),
+    radial-gradient(110% 80% at 88% 14%, #6a5cff 0%, transparent 58%),
+    radial-gradient(130% 100% at 50% 96%, #17d6c4 0%, transparent 60%),
+    linear-gradient(150deg, #2a2f6b, #101430);
+}
+.rw-bp-dusk {
+  background:
+    radial-gradient(100% 70% at 22% 92%, #f0764a 0%, transparent 52%),
+    radial-gradient(90% 70% at 78% 8%,  #3d2a6d 0%, transparent 55%),
+    linear-gradient(180deg, #1b1c3a, #05060e);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-glass, .rw-glass * { transition: none !important; animation: none !important; }
+}

@@ -1,0 +1,39 @@
+---
+/** 02 · Palette — ⌘K search. Concentric: 20px outer minus 11px padding = 11px rows. */
+export interface PaletteRow { glyph?: string; label: string; tail?: string; href?: string; current?: boolean }
+interface Props { placeholder?: string; rows: PaletteRow[]; class?: string }
+const { placeholder = 'Jump to…', rows, class: cls = '' } = Astro.props;
+---
+<div class:list={['rw-pal', 'rw-glass', cls]} role="dialog" aria-label="Command palette">
+  <div class="rw-pal__field">
+    <span class="rw-gl" aria-hidden="true">⌕</span>
+    <input type="search" placeholder={placeholder} aria-label={placeholder} />
+  </div>
+  <ul class="rw-pal__rows">
+    {rows.map((r) => (
+      <li>
+        <a href={r.href ?? '#'} class:list={['rw-pal__row', { 'is-current': r.current }]}>
+          {r.glyph && <span class="rw-gl" aria-hidden="true">{r.glyph}</span>}
+          <span>{r.label}</span>
+          {r.tail && <span class="rw-pal__tail rw-gl">{r.tail}</span>}
+        </a>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .rw-pal { --r: 20px; padding: 11px; display: flex; flex-direction: column; gap: 9px; }
+  .rw-pal__field { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border-radius: 11px;
+    background: rgb(var(--rim-rgb) / .09); color: var(--g-ink-dim); }
+  .rw-pal__field input { flex: 1; min-width: 0; background: none; border: 0; outline: none;
+    font: 400 .9rem/1 var(--g-font); color: var(--g-ink); }
+  .rw-pal__field input::placeholder { color: var(--g-ink-mute); }
+  .rw-pal__field:focus-within { box-shadow: inset 0 0 0 1.5px rgb(var(--rim-rgb) / .4); }
+  .rw-pal__rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .rw-pal__row { display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 11px;
+    font-size: .82rem; color: var(--g-ink-dim); text-decoration: none; }
+  .rw-pal__row:hover, .rw-pal__row.is-current { background: rgb(var(--rim-rgb) / .14); color: var(--g-ink); }
+  .rw-pal__row:focus-visible { outline: 2px solid var(--g-ink); outline-offset: -2px; }
+  .rw-pal__tail { margin-left: auto; font: 500 .68rem/1 var(--g-mono); color: var(--g-ink-mute); }
+</style>
