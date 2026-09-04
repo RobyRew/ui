@@ -93,6 +93,42 @@ control cluster.
 `font-variant-emoji: text`, so no platform swaps one for a colour emoji. The icon
 layer costs no bytes and inherits text colour.
 
+
+## Real refraction (opt-in, Chromium only)
+
+`backdrop-filter` can only blur. Bending the backdrop — what makes Apple's glass
+look like glass rather than frosted plastic — needs an SVG filter referenced from
+`backdrop-filter`, running `feDisplacementMap` against a normal map of the bezel.
+
+```js
+import { enableRefraction } from '@robyrew/ui/refraction.js';
+enableRefraction();                                  // every .rw-glass
+enableRefraction({ selector: '.my-bar', scale: 60, bezel: 34 });
+```
+
+`feDisplacementMap` samples `P'(x,y) = P(x + scale·(R−0.5), y + scale·(G−0.5))`,
+so **128 grey means no shift**, R drives horizontal displacement and G vertical.
+The map has to be a real bitmap matching the element's pixel size, which is why
+it is generated on a canvas per element and rebuilt on resize — it cannot be
+expressed in CSS.
+
+The bezel profile is `(1 − depth/bezel)²` along the inward normal of a
+rounded-rectangle SDF: strongest right at the rim, gone by `bezel` deep. That is
+what compresses the backdrop at the edge the way a lens does.
+
+**Support.** `url()` inside `backdrop-filter` ships in Chromium only. Safari and
+Firefox ignore it, so they keep the blur baseline and nothing breaks — the
+function returns early and adds no class. It also opts out under
+`prefers-reduced-transparency`.
+
+**Cost.** One canvas pass and one PNG data URL per element, redone on resize.
+Fine for a handful of floating surfaces; do not put it on a list of fifty cards.
+
+**Not included: chromatic aberration.** Splitting into three displacement passes
+at different scales and recombining with `feComposite arithmetic` did not
+reconstruct the backdrop correctly in testing, and Apple's own dispersion is
+subtle enough that it is not worth the threefold filter cost.
+
 ## Theme
 
 Dark-first, because smoked glass only reads over a dark ground. All three theme

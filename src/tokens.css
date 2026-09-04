@@ -148,3 +148,18 @@
 @media (prefers-reduced-motion: reduce) {
   .rw-glass, .rw-glass * { transition: none !important; animation: none !important; }
 }
+
+
+/* ── Real refraction (opt-in) ─────────────────────────────────────
+ * backdrop-filter cannot bend anything; it only blurs. Bending needs an SVG
+ * filter referenced from backdrop-filter, running feDisplacementMap against a
+ * normal map of the bezel. refraction.js builds that map per element and sets
+ * --rw-refract-url, then adds this class.
+ *
+ * Chromium only. Safari and Firefox ignore url() in backdrop-filter, so they
+ * keep the blur baseline above and nothing breaks.
+ */
+.rw-glass.rw-refracting {
+  -webkit-backdrop-filter: var(--rw-refract-url) blur(var(--t-blur-refract, 2px)) saturate(var(--t-sat));
+  backdrop-filter: var(--rw-refract-url) blur(var(--t-blur-refract, 2px)) saturate(var(--t-sat));
+}
