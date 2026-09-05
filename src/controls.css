@@ -349,8 +349,11 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
 .rw-badge--accent { background: var(--accent-soft); color: var(--accent); }
 
 /* ── Switch ───────────────────────────────────────────────────────
- * Built on a real <input type="checkbox"> so it is focusable, form-associated
- * and announced correctly; appearance:none only removes the native painting.
+ * Prefer a real <input type="checkbox">: focusable, form-associated and
+ * announced without any ARIA; appearance:none only removes the native painting.
+ * A <button role="switch" aria-checked> is also accepted, because that shape is
+ * already common in React codebases and is correct on its own terms. The knob
+ * is a ::after either way, so a button must not carry its own knob element.
  */
 .rw-switch {
   appearance: none;
@@ -363,6 +366,8 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   background: var(--rw-fill-3);
   cursor: pointer;
   transition: background .28s var(--rw-ease);
+  border: 0;
+  padding: 0;
 }
 .rw-switch::after {
   content: "";
@@ -376,8 +381,10 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   box-shadow: 0 1px 3px rgb(0 0 0 / .22), 0 0 0 .5px rgb(0 0 0 / .04);
   transition: transform .28s var(--rw-ease);
 }
-.rw-switch:checked { background: var(--accent); }
-.rw-switch:checked::after { transform: translateX(1.1875rem); }
+.rw-switch:checked,
+.rw-switch[aria-checked="true"] { background: var(--accent); }
+.rw-switch:checked::after,
+.rw-switch[aria-checked="true"]::after { transform: translateX(1.1875rem); }
 .rw-switch:disabled { opacity: .45; cursor: not-allowed; }
 
 /* ── Focus ────────────────────────────────────────────────────────
