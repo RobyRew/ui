@@ -1,6 +1,6 @@
 {
   "name": "@robyrew/ui",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Liquid-glass material (Obsidian) plus an Apple control set, shared across the RobyRew sites",
   "license": "Apache-2.0",
   "type": "module",

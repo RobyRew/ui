@@ -207,6 +207,13 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   padding-inline: .5rem;
 }
 .rw-btn--plain:hover:not(:disabled) { background: var(--accent-soft); }
+/* Destructive. Tinted text on a neutral fill rather than a red slab: Apple
+   reserves the filled red for the confirmation itself, not for the control
+   that opens it. */
+.rw-btn--danger { color: var(--rw-danger); }
+.rw-btn--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--rw-danger) 14%, transparent);
+}
 .rw-btn--sm { padding: .3125rem .625rem; font-size: .8125rem; border-radius: 8px; }
 .rw-btn--lg { padding: .625rem 1.125rem; font-size: .9375rem; border-radius: 12px; }
 .rw-btn--block { display: flex; width: 100%; }
@@ -277,6 +284,31 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
 .rw-seg__item[aria-selected="true"],
 .rw-seg__item[aria-checked="true"],
 .rw-seg__item.is-active { color: var(--ink); }
+
+/* The sliding thumb is one element the markup has to provide, and it needs a
+   --i to slide to. Where a control has no thumb, the selected segment paints
+   its own capsule instead — otherwise selection would be carried by a colour
+   change alone, which is not enough on its own. */
+.rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-selected="true"],
+.rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-checked="true"],
+.rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item.is-active {
+  background: var(--rw-fill-3);
+  box-shadow: inset 0 1px 0 rgb(var(--rim-rgb) / .35), 0 1px 2px rgb(var(--shadow-rgb) / .16);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-selected="true"],
+  :root:not([data-theme="dark"]) .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-checked="true"],
+  :root:not([data-theme="dark"]) .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item.is-active {
+    background: rgb(255 255 255 / .94);
+    box-shadow: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .04);
+  }
+}
+:root[data-theme="light"] .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-selected="true"],
+:root[data-theme="light"] .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-checked="true"],
+:root[data-theme="light"] .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item.is-active {
+  background: rgb(255 255 255 / .94);
+  box-shadow: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .04);
+}
 
 /* ── Chip / badge ─────────────────────────────────────────────────
  * A chip is pressable; a badge is a label. They look alike and behave nothing

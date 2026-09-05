@@ -160,8 +160,8 @@ meaning anything, so the content layer is deliberately opaque.
 | --- | --- |
 | `.rw-card` | Grouped container, 16px. Add `--interactive` for the hover lift. `.rw-card__row` for divided rows. |
 | `.rw-field` | Filled input/textarea. Focus adds an accent ring outside the border, so the control does not resize. `.rw-field-wrap` + `.rw-field-icon` for a leading glyph. |
-| `.rw-btn` | Filled. `--primary`, `--plain`, `--sm`, `--lg`, `--block`. |
-| `.rw-seg` | Segmented control. Set `--n` to the segment count and `--i` to the selected index; the thumb translates. |
+| `.rw-btn` | Filled. `--primary`, `--plain`, `--danger`, `--sm`, `--lg`, `--block`. |
+| `.rw-seg` | Segmented control. Provide a `.rw-seg__thumb` and set `--n` (segment count) and `--i` (selected index) to get the sliding capsule; without a thumb element the selected segment paints its own. |
 | `.rw-chip` / `.rw-badge` | Pressable vs. label. Separate classes because they behave differently. |
 | `.rw-switch` | On a real `<input type="checkbox">`. |
 
