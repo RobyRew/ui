@@ -2,7 +2,8 @@
 // by path so a consumer only pays for what it uses:
 //
 //   import Bar from '@robyrew/ui/components/GlassBar.astro';
-//   import '@robyrew/ui/tokens.css';
+//   import '@robyrew/ui/tokens.css';    // the glass material
+//   import '@robyrew/ui/controls.css';  // cards, fields, buttons, segments
 //
 // This module exists for the type-level exports only.
 
@@ -24,4 +25,24 @@ export interface GlassTokens {
   '--rim-rgb'?: string;
   '--g-ink'?: string;
   '--g-ink-dim'?: string;
+}
+
+
+/** A control in the Apple set (controls.css). Class names are `rw-` prefixed. */
+export type ControlName =
+  | 'card' | 'field' | 'btn' | 'seg' | 'chip' | 'badge' | 'switch';
+
+/** Custom properties controls.css reads. Overriding --panel, --hair, --ink and
+ *  --accent from tokens.css re-themes every control; these are the shape and
+ *  elevation knobs on top of that. */
+export interface ControlTokens {
+  '--rw-r-card'?: string;
+  '--rw-r-ctl'?: string;
+  '--rw-r-chip'?: string;
+  '--rw-fill'?: string;
+  '--rw-fill-2'?: string;
+  '--rw-fill-3'?: string;
+  '--rw-well'?: string;
+  '--rw-danger'?: string;
+  '--rw-ease'?: string;
 }

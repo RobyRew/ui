@@ -141,3 +141,32 @@ become white glass when the OS turns light; the page around it changes instead.
 ## Licence
 
 Apache-2.0.
+
+## Apple controls (`controls.css`)
+
+`tokens.css` is the glass material. `controls.css` is everything that is not
+glass: the content layer that sits on the page, opaque, never blurred.
+
+```js
+import '@robyrew/ui/tokens.css';
+import '@robyrew/ui/controls.css';
+```
+
+Glass is the functional layer — bar, palette, sheet — floating over content.
+A card inside a glass bar makes two blurred layers and the material stops
+meaning anything, so the content layer is deliberately opaque.
+
+| Class | Notes |
+| --- | --- |
+| `.rw-card` | Grouped container, 16px. Add `--interactive` for the hover lift. `.rw-card__row` for divided rows. |
+| `.rw-field` | Filled input/textarea. Focus adds an accent ring outside the border, so the control does not resize. `.rw-field-wrap` + `.rw-field-icon` for a leading glyph. |
+| `.rw-btn` | Filled. `--primary`, `--plain`, `--sm`, `--lg`, `--block`. |
+| `.rw-seg` | Segmented control. Set `--n` to the segment count and `--i` to the selected index; the thumb translates. |
+| `.rw-chip` / `.rw-badge` | Pressable vs. label. Separate classes because they behave differently. |
+| `.rw-switch` | On a real `<input type="checkbox">`. |
+
+Radii nest concentrically: `.rw-card` republishes its radius as `--rw-r`, so a
+child subtracts its own padding from it.
+
+Re-theming is four properties from `tokens.css` — `--panel`, `--hair`, `--ink`,
+`--accent`. The `--rw-*` properties above are the shape and elevation knobs.
