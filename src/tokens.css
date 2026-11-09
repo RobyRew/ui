@@ -11,24 +11,33 @@
  * Obsidian keeps its own material base in BOTH themes — it does not become white
  * glass when the OS turns light. That is the identity of this direction, not an
  * oversight.
+ *
+ * NEUTRAL DARK. The dark grounds, ink, hairlines, glass and glass ink are greys
+ * with no colour cast, and the accent is the only hue. Up to 0.3.2 all of them
+ * were tinted blue (#08090d grounds, blue-grey ink and rim); 0.3.3 dropped the
+ * tint at the owner's request, no blue in the dark theme (2026-11-09). The light
+ * blocks below do not set the material, so the glass is the same neutral smoke
+ * in the light theme too.
  */
 
 :root {
   /* Page — override these to fit the host site. */
-  --ground:      #08090d;
-  --ground-2:    #0e1016;
-  --ink:         #eef1f7;
-  --ink-2:       #9aa2b4;
-  --ink-3:       #6b7385;
-  --hair:        #1e2029;
-  --hair-soft:   #14161d;
-  --panel:       #101219;
+  --ground:      #090909;
+  --ground-2:    #0f0f0f;
+  --ink:         #ededed;
+  --ink-2:       #a3a3a3;
+  --ink-3:       #737373;
+  --hair:        #252525;
+  --hair-soft:   #1a1a1a;
+  --panel:       #131313;
   --accent:      #7aa2ff;
-  --accent-soft: rgb(122 162 255 / .13);
+  /* A white wash rather than a tint of the accent: a blue fill behind plain
+   * buttons and accent badges would bring the cast back. */
+  --accent-soft: rgb(255 255 255 / .08);
 
   /* Material. A different "taste" is only a different set of these eleven. */
-  --glass-rgb:  26 29 38;
-  --rim-rgb:    190 205 235;
+  --glass-rgb:  30 30 30;
+  --rim-rgb:    214 214 214;
   --shadow-rgb: 0 0 0;
   --t-alpha:    .52;
   --t-blur:     30px;
@@ -39,9 +48,9 @@
   --t-sh-a:     .34;
 
   /* Ink ON glass. Separate from page ink: the backdrop behind glass is not the page. */
-  --g-ink:      #f4f6fb;
-  --g-ink-dim:  #a4adc0;
-  --g-ink-mute: #737c8f;
+  --g-ink:      #f5f5f5;
+  --g-ink-dim:  #a8a8a8;
+  --g-ink-mute: #7a7a7a;
 
   --g-font: Manrope, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --g-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;

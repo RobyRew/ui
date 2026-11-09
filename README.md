@@ -56,8 +56,8 @@ globally, or on one subtree:
 
 ```css
 :root {
-  --glass-rgb: 26 29 38;   /* material base   */
-  --rim-rgb:   190 205 235;/* specular edge   */
+  --glass-rgb: 30 30 30;   /* material base   */
+  --rim-rgb:   214 214 214;/* specular edge   */
   --t-alpha:   .52;        /* opacity         */
   --t-blur:    30px;
   --t-sat:     140%;
@@ -65,8 +65,8 @@ globally, or on one subtree:
   --t-sh-y:    16px;
   --t-sh-blur: 38px;
   --t-sh-a:    .34;
-  --g-ink:     #f4f6fb;    /* ink ON glass    */
-  --g-ink-dim: #a4adc0;
+  --g-ink:     #f5f5f5;    /* ink ON glass    */
+  --g-ink-dim: #a8a8a8;
 }
 ```
 
@@ -137,6 +137,11 @@ unstamped document — what most visitors get — falls to `prefers-color-scheme
 
 Obsidian deliberately keeps its own material base in both themes. It does not
 become white glass when the OS turns light; the page around it changes instead.
+
+The dark palette is neutral: near-black grounds, grey ink and hairlines, and
+colourless glass, so the accent is the only hue on the page. Up to v0.3.2 all of
+these were tinted blue. Because the material is shared, the glass is the same
+neutral smoke in the light theme; the light page palette is unchanged.
 
 ## Licence
 
