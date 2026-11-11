@@ -1,6 +1,6 @@
 /* @robyrew/ui — Apple controls
  *
- *     import '@robyrew/ui/tokens.css';    // the glass material
+ *     import '@robyrew/ui/tokens.css';    // tokens and the glass material
  *     import '@robyrew/ui/controls.css';  // everything that is not glass
  *
  * THE TWO LAYERS ARE DELIBERATELY SEPARATE. Glass is the functional layer —
@@ -9,56 +9,19 @@
  * glass card inside a glass bar is the single most common way this language is
  * got wrong; the material loses its meaning when everything is made of it.
  *
- * Shapes follow Apple's control metrics: a grouped card at 16px, a control at
- * 10px, a capsule for anything segmented. Radii nest concentrically — an inner
- * radius is the outer radius minus the padding between them, which is why the
- * cards below expose --rw-r for their children to subtract from.
+ * This file declares no tokens and has no theme blocks. Every colour, radius,
+ * height and duration comes from tokens.css, which re-themes per data-theme
+ * subtree — so a control inside a [data-theme="light"] section on a dark page
+ * is a light control.
  *
- * Colours derive from the page tokens in tokens.css (--panel, --hair, --ink,
- * --accent). Overriding those four re-themes every control here.
+ * Shared behaviour:
+ *  - Hover feedback only on devices that hover. A tap on a phone leaves no
+ *    stuck hover state behind.
+ *  - A press scales by --rw-press (1 under reduced motion).
+ *  - One focus ring: --rw-focus (default the accent), 2px, offset 2px.
+ *  - Heights come from --rw-ctl-h*, which grow to 44pt under a coarse pointer.
+ *  - Logical properties throughout, so right-to-left layouts mirror.
  */
-
-:root {
-  /* Radii. Apple's own metrics, not a scale invented to look tidy. */
-  --rw-r-card:  16px;
-  --rw-r-ctl:   10px;
-  --rw-r-chip:  999px;
-
-  /* Fills. Apple layers translucent greys rather than picking flat greys, so a
-   * control keeps its relationship to whatever surface it lands on. */
-  --rw-fill:    rgb(255 255 255 / .055);
-  --rw-fill-2:  rgb(255 255 255 / .085);
-  --rw-fill-3:  rgb(255 255 255 / .13);
-  --rw-well:    rgb(0 0 0 / .16);
-
-  /* Elevation. Two shadows, never one: a tight contact shadow that anchors the
-   * object plus a wide soft one that lifts it. A single blur reads as a sticker. */
-  --rw-e1: 0 1px 2px rgb(var(--shadow-rgb) / .10), 0 1px 1px rgb(var(--shadow-rgb) / .06);
-  --rw-e2: 0 4px 12px rgb(var(--shadow-rgb) / .16), 0 1px 2px rgb(var(--shadow-rgb) / .10);
-  --rw-e3: 0 12px 34px rgb(var(--shadow-rgb) / .26), 0 2px 6px rgb(var(--shadow-rgb) / .12);
-
-  /* One easing everywhere. Apple's control curve: fast out, long settle. */
-  --rw-ease: cubic-bezier(.32, .72, 0, 1);
-
-  --rw-danger: #ff5a5f;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --rw-fill:   rgb(0 0 0 / .045);
-    --rw-fill-2: rgb(0 0 0 / .07);
-    --rw-fill-3: rgb(0 0 0 / .11);
-    --rw-well:   rgb(0 0 0 / .05);
-    --rw-danger: #d70015;
-  }
-}
-:root[data-theme="light"] {
-  --rw-fill:   rgb(0 0 0 / .045);
-  --rw-fill-2: rgb(0 0 0 / .07);
-  --rw-fill-3: rgb(0 0 0 / .11);
-  --rw-well:   rgb(0 0 0 / .05);
-  --rw-danger: #d70015;
-}
 
 /* ── Card ─────────────────────────────────────────────────────────
  * Apple's inset grouped container. Opaque panel, hairline, soft lift.
@@ -78,35 +41,65 @@
 /* Only a card that actually goes somewhere gets hover feedback. A static
  * container that lifts under the pointer promises a click it does not have. */
 .rw-card--interactive {
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
   transition:
-    transform .22s var(--rw-ease),
-    box-shadow .22s var(--rw-ease),
-    border-color .22s var(--rw-ease);
+    transform var(--rw-dur-2) var(--rw-ease),
+    box-shadow var(--rw-dur-2) var(--rw-ease),
+    border-color var(--rw-dur-2) var(--rw-ease);
 }
-.rw-card--interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--rw-e2);
-  /* The hairline warms rather than takes the accent. Apple does not tint an
-   * edge on hover; the lift is the affordance. */
-  border-color: color-mix(in oklab, var(--hair) 65%, var(--ink) 35%);
+@media (hover: hover) {
+  .rw-card--interactive:hover {
+    transform: translateY(var(--rw-lift));
+    box-shadow: var(--rw-e2);
+    /* The hairline warms rather than takes the accent. Apple does not tint an
+     * edge on hover; the lift is the affordance. */
+    border-color: color-mix(in oklab, var(--hair) 65%, var(--ink) 35%);
+  }
 }
-.rw-card--interactive:active { transform: translateY(0); box-shadow: var(--rw-e1); }
+.rw-card--interactive:active {
+  transform: scale(calc(1 - (1 - var(--rw-press)) / 3));
+  box-shadow: var(--rw-e1);
+  transition-duration: var(--rw-dur-1);
+}
 
-/* Rows inside a card: full-bleed dividers, inset content, concentric ends. */
+/* Rows inside a card: full-bleed dividers, inset content, concentric ends.
+ * Rows sit inside the card's 1px border, so their outer corners are 1px
+ * tighter than the card's. */
 .rw-card__rows { display: flex; flex-direction: column; }
 .rw-card__row {
   display: flex;
   align-items: center;
-  gap: .75rem;
-  padding: .75rem 1rem;
+  gap: var(--rw-sp-3);
+  padding: var(--rw-sp-3) var(--rw-sp-4);
+  /* 44pt: a row is a touch target on every device. */
   min-height: 2.75rem;
   color: inherit;
+  text-decoration: none;
 }
+/* The divider outranks the button reset below (0,2,0 against 0,1,1). */
 .rw-card__row + .rw-card__row { border-top: 1px solid var(--hair-soft); }
-.rw-card__row:first-child { border-radius: var(--rw-r) var(--rw-r) 0 0; }
-.rw-card__row:last-child  { border-radius: 0 0 var(--rw-r) var(--rw-r); }
-a.rw-card__row, button.rw-card__row { cursor: pointer; transition: background .15s var(--rw-ease); }
-a.rw-card__row:hover, button.rw-card__row:hover { background: var(--rw-fill); }
+.rw-card__row:first-child { border-start-start-radius: calc(var(--rw-r) - 1px); border-start-end-radius: calc(var(--rw-r) - 1px); }
+.rw-card__row:last-child { border-end-start-radius: calc(var(--rw-r) - 1px); border-end-end-radius: calc(var(--rw-r) - 1px); }
+button.rw-card__row {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: start;
+}
+a.rw-card__row,
+button.rw-card__row {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  a.rw-card__row:hover,
+  button.rw-card__row:hover { background: var(--rw-fill); }
+}
+a.rw-card__row:active,
+button.rw-card__row:active { background: var(--rw-fill-2); }
 
 /* ── Field ────────────────────────────────────────────────────────
  * Filled, not outlined. macOS/iOS text fields are a recessed fill with a
@@ -115,44 +108,93 @@ a.rw-card__row:hover, button.rw-card__row:hover { background: var(--rw-fill); }
  */
 .rw-field {
   width: 100%;
-  padding: .5rem .75rem;
+  min-height: var(--rw-ctl-h);
+  padding: .4375rem .75rem;
   border-radius: var(--rw-r-ctl);
   background: var(--rw-fill);
   border: 1px solid var(--hair);
   color: var(--ink);
   font: inherit;
-  font-size: .9375rem;
+  /* 16px on a coarse pointer, so iOS does not zoom on focus (tokens.css). */
+  font-size: var(--rw-field-fs);
   line-height: 1.4;
-  transition: border-color .15s var(--rw-ease), box-shadow .15s var(--rw-ease), background .15s var(--rw-ease);
+  transition:
+    border-color var(--rw-dur-1) var(--rw-ease),
+    box-shadow var(--rw-dur-1) var(--rw-ease),
+    background-color var(--rw-dur-1) var(--rw-ease);
 }
-.rw-field::placeholder { color: var(--ink-3); }
-.rw-field:hover:not(:disabled) { background: var(--rw-fill-2); }
+/* Firefox dims placeholders by default; the colour already carries the dimming,
+ * and stacking both drops it below AA. */
+.rw-field::placeholder { color: var(--ink-3); opacity: 1; }
+@media (hover: hover) {
+  .rw-field:hover:not(:disabled, :focus) { background: var(--rw-fill-2); }
+}
 .rw-field:focus,
 .rw-field:focus-visible {
   outline: none;
   background: var(--panel);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--accent) 26%, transparent);
+  border-color: var(--rw-focus, var(--accent));
+  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--rw-focus, var(--accent)) 26%, transparent);
 }
 .rw-field:disabled { opacity: .5; cursor: not-allowed; }
-.rw-field[aria-invalid="true"] {
-  border-color: var(--rw-danger, #ff4d4f);
-  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--rw-danger, #ff4d4f) 22%, transparent);
+/* aria-invalid for server-side errors; :user-invalid for the browser's own
+ * checks, which only match once the person has interacted with the field. */
+.rw-field[aria-invalid="true"],
+.rw-field:user-invalid {
+  border-color: var(--rw-danger);
+  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--rw-danger) 22%, transparent);
 }
 textarea.rw-field { resize: vertical; min-height: 5rem; }
+/* Grows with its content where field-sizing ships; a fixed textarea elsewhere. */
+textarea.rw-field--grow { field-sizing: content; max-height: 40vh; }
+
+/* Autofill. Browsers paint their own background with !important; a large inset
+ * shadow is the one thing that covers it, so the field keeps the house fill. */
+.rw-field:-webkit-autofill {
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  box-shadow: inset 0 0 0 100vmax color-mix(in srgb, var(--accent) 7%, var(--panel));
+}
+.rw-field:-webkit-autofill:focus {
+  box-shadow:
+    inset 0 0 0 100vmax color-mix(in srgb, var(--accent) 7%, var(--panel)),
+    0 0 0 3.5px color-mix(in srgb, var(--rw-focus, var(--accent)) 26%, transparent);
+}
+
+/* A select drawn like the field, with a chevron made of two gradients — no
+ * image, so no img-src entry in anyone's CSP. */
+select.rw-field {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-inline-end: 2rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
+    linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1rem) 50%,
+    calc(100% - .7rem) 50%;
+  background-size: .3rem .3rem;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+select.rw-field:dir(rtl) {
+  background-position:
+    .7rem 50%,
+    1rem 50%;
+}
 
 /* A field with a leading glyph: the icon lives in the wrapper so the input
  * keeps its own full hit area and the caret never lands under the icon. */
 .rw-field-wrap { position: relative; display: flex; align-items: center; }
 .rw-field-wrap > .rw-field-icon {
   position: absolute;
-  left: .625rem;
+  inset-inline-start: .625rem;
   display: grid;
   place-items: center;
   color: var(--ink-3);
   pointer-events: none;
 }
-.rw-field-wrap > .rw-field-icon ~ .rw-field { padding-left: 2.125rem; }
+.rw-field-wrap > .rw-field-icon ~ .rw-field { padding-inline-start: 2.125rem; }
 
 .rw-label {
   display: block;
@@ -162,17 +204,20 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   color: var(--ink-2);
 }
 .rw-hint { margin-top: .375rem; font-size: .8125rem; color: var(--ink-3); }
+.rw-hint--error { color: var(--rw-danger); }
 
 /* ── Button ───────────────────────────────────────────────────────
  * Filled by default. Apple stopped bordering buttons: they are a fill plus a
  * weight. The primary is the accent; everything else is a neutral fill.
  */
 .rw-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: .4rem;
-  padding: .5rem .875rem;
+  min-height: var(--rw-ctl-h);
+  padding: .375rem .875rem;
   border-radius: var(--rw-r-ctl);
   border: 1px solid transparent;
   background: var(--rw-fill-2);
@@ -181,48 +226,108 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   font-size: .875rem;
   font-weight: 590;
   line-height: 1.2;
+  text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
-  transition: background .15s var(--rw-ease), transform .1s var(--rw-ease), box-shadow .15s var(--rw-ease);
+  user-select: none;
+  /* No double-tap zoom on a button, so a tap registers at once. */
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--rw-dur-1) var(--rw-ease),
+    color var(--rw-dur-1) var(--rw-ease),
+    box-shadow var(--rw-dur-1) var(--rw-ease),
+    transform var(--rw-dur-1) var(--rw-ease);
 }
-.rw-btn:hover:not(:disabled) { background: var(--rw-fill-3); }
+@media (hover: hover) {
+  .rw-btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--rw-fill-3); }
+}
 /* The press is a scale, not a colour change — that is what makes an Apple
    control feel physical rather than like a state machine. */
-.rw-btn:active:not(:disabled) { transform: scale(.97); }
-.rw-btn:disabled { opacity: .45; cursor: not-allowed; }
+.rw-btn:active:not(:disabled, [aria-disabled="true"]) { transform: scale(var(--rw-press)); }
+.rw-btn:disabled,
+.rw-btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
 
 .rw-btn--primary {
   background: var(--accent);
-  color: #fff;
+  /* --on-accent: dark on the light dark-theme accent, white on the deep
+   * light-theme one, each picked for 4.5:1 (npm run check measures it). */
+  color: var(--on-accent);
   /* A one-pixel top highlight inside the fill: the light is above. */
   box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), var(--rw-e1);
 }
-.rw-btn--primary:hover:not(:disabled) {
-  background: color-mix(in oklab, var(--accent) 88%, #fff);
+/* Hover mixes toward the ink, which moves the fill AWAY from its label in
+ * both themes — the label gains contrast on hover instead of losing it. */
+@media (hover: hover) {
+  .rw-btn--primary:hover:not(:disabled, [aria-disabled="true"]) {
+    background: color-mix(in oklab, var(--accent) 88%, var(--ink));
+  }
 }
 .rw-btn--plain {
   background: transparent;
   color: var(--accent);
   padding-inline: .5rem;
 }
-.rw-btn--plain:hover:not(:disabled) { background: var(--accent-soft); }
+@media (hover: hover) {
+  .rw-btn--plain:hover:not(:disabled, [aria-disabled="true"]) { background: var(--accent-soft); }
+}
 /* Destructive. Tinted text on a neutral fill rather than a red slab: Apple
    reserves the filled red for the confirmation itself, not for the control
    that opens it. */
 .rw-btn--danger { color: var(--rw-danger); }
-.rw-btn--danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--rw-danger) 14%, transparent);
+@media (hover: hover) {
+  .rw-btn--danger:hover:not(:disabled, [aria-disabled="true"]) {
+    background: color-mix(in srgb, var(--rw-danger) 14%, transparent);
+  }
 }
-.rw-btn--sm { padding: .3125rem .625rem; font-size: .8125rem; border-radius: 8px; }
-.rw-btn--lg { padding: .625rem 1.125rem; font-size: .9375rem; border-radius: 12px; }
+.rw-btn--sm {
+  min-height: var(--rw-ctl-h-sm);
+  padding: .25rem .625rem;
+  font-size: .8125rem;
+  border-radius: var(--rw-r-ctl-sm);
+}
+.rw-btn--lg {
+  min-height: var(--rw-ctl-h-lg);
+  padding: .5rem 1.125rem;
+  font-size: .9375rem;
+  border-radius: var(--rw-r-ctl-lg);
+}
 .rw-btn--block { display: flex; width: 100%; }
+/* Square, for a single glyph. Give it an aria-label. */
+.rw-btn--icon {
+  min-width: var(--rw-ctl-h);
+  padding: 0;
+  aspect-ratio: 1;
+}
+.rw-btn--icon.rw-btn--sm { min-width: var(--rw-ctl-h-sm); }
+.rw-btn--icon.rw-btn--lg { min-width: var(--rw-ctl-h-lg); }
+
+/* Busy: aria-busy="true" adds a spinner before the label and blocks a second
+ * press without greying the control out. */
+.rw-btn[aria-busy="true"] { cursor: progress; pointer-events: none; }
+.rw-btn[aria-busy="true"]::before {
+  content: "";
+  width: 1em;
+  height: 1em;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  animation: rw-spin .8s linear infinite;
+}
+
+/* A row of actions that wraps instead of overflowing — on a watch-sized
+ * screen the buttons stack. --stretch gives every button an equal share. */
+.rw-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--rw-sp-2); }
+.rw-actions--end { justify-content: flex-end; }
+.rw-actions--stretch > * { flex: 1 1 8rem; }
 
 /* ── Segmented control ────────────────────────────────────────────
  * A recessed well holding equal segments and one capsule that slides to the
  * selection. Set --n to the number of segments and --i to the selected index;
  * the thumb is translated, so switching costs a compositor transform instead
- * of repainting every segment.
+ * of repainting every segment. behaviors.js (initSegments) keeps --n and --i in
+ * step with the markup's aria state, so a page can toggle aria-selected alone.
  *
  * Works with role="tablist" / role="radiogroup" / plain buttons — the styling
  * keys off [aria-selected="true"], [aria-checked="true"] and .is-active alike.
@@ -231,35 +336,31 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   position: relative;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-auto-columns: minmax(0, 1fr);
   padding: 3px;
   border-radius: var(--rw-r-chip);
   background: var(--rw-well);
   box-shadow: inset 0 1px 2px rgb(var(--shadow-rgb) / .14);
+  isolation: isolate;
 }
 .rw-seg__thumb {
+  --rw-dir: 1;
   position: absolute;
-  inset: 3px auto 3px 3px;
+  inset-block: 3px;
+  inset-inline-start: 3px;
   width: calc((100% - 6px) / var(--n, 1));
   border-radius: var(--rw-r-chip);
-  background: var(--rw-fill-3);
-  box-shadow: inset 0 1px 0 rgb(var(--rim-rgb) / .35), 0 1px 2px rgb(var(--shadow-rgb) / .16);
-  transform: translateX(calc(var(--i, 0) * 100%));
-  transition: transform .42s var(--rw-ease);
+  background: var(--rw-thumb);
+  box-shadow: var(--rw-thumb-sh);
+  transform: translateX(calc(var(--i, 0) * 100% * var(--rw-dir)));
+  transition:
+    transform var(--rw-dur-move) var(--rw-ease-spring),
+    scale var(--rw-dur-2) var(--rw-ease);
   pointer-events: none;
 }
-/* On a light ground the thumb is a solid raised chip, as it is on iOS — a
-   translucent white over a white surface reads as nothing at all. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) .rw-seg__thumb {
-    background: rgb(255 255 255 / .94);
-    box-shadow: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .04);
-  }
-}
-:root[data-theme="light"] .rw-seg__thumb {
-  background: rgb(255 255 255 / .94);
-  box-shadow: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .04);
-}
+.rw-seg:dir(rtl) .rw-seg__thumb { --rw-dir: -1; }
+/* Pressing the selected segment squeezes the thumb, as iOS does. */
+.rw-seg:has(.rw-seg__item:is([aria-selected="true"], [aria-checked="true"], .is-active):active) .rw-seg__thumb { scale: .96; }
 .rw-seg__item {
   position: relative;
   z-index: 1;
@@ -268,7 +369,8 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   justify-content: center;
   gap: .4rem;
   min-width: 0;
-  padding: .375rem .5rem;
+  min-height: calc(var(--rw-ctl-h) - 6px);
+  padding: .25rem .625rem;
   border-radius: var(--rw-r-chip);
   background: none;
   border: 0;
@@ -276,11 +378,16 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   font-size: .8125rem;
   font-weight: 590;
   color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
   cursor: pointer;
-  transition: color .2s var(--rw-ease);
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  transition: color var(--rw-dur-2) var(--rw-ease);
 }
-.rw-seg__item:hover { color: var(--ink); }
+@media (hover: hover) {
+  .rw-seg__item:hover { color: var(--ink); }
+}
 .rw-seg__item[aria-selected="true"],
 .rw-seg__item[aria-checked="true"],
 .rw-seg__item.is-active { color: var(--ink); }
@@ -289,25 +396,9 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
    --i to slide to. Where a control has no thumb, the selected segment paints
    its own capsule instead — otherwise selection would be carried by a colour
    change alone, which is not enough on its own. */
-.rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-selected="true"],
-.rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-checked="true"],
-.rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item.is-active {
-  background: var(--rw-fill-3);
-  box-shadow: inset 0 1px 0 rgb(var(--rim-rgb) / .35), 0 1px 2px rgb(var(--shadow-rgb) / .16);
-}
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-selected="true"],
-  :root:not([data-theme="dark"]) .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-checked="true"],
-  :root:not([data-theme="dark"]) .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item.is-active {
-    background: rgb(255 255 255 / .94);
-    box-shadow: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .04);
-  }
-}
-:root[data-theme="light"] .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-selected="true"],
-:root[data-theme="light"] .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item[aria-checked="true"],
-:root[data-theme="light"] .rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item.is-active {
-  background: rgb(255 255 255 / .94);
-  box-shadow: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .04);
+.rw-seg:not(:has(.rw-seg__thumb)) .rw-seg__item:is([aria-selected="true"], [aria-checked="true"], .is-active) {
+  background: var(--rw-thumb);
+  box-shadow: var(--rw-thumb-sh);
 }
 
 /* ── Chip / badge ─────────────────────────────────────────────────
@@ -315,24 +406,38 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
  * alike, so they are separate classes rather than one with a modifier.
  */
 .rw-chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: .3rem;
+  min-height: 1.75rem;
   padding: .25rem .625rem;
   border-radius: var(--rw-r-chip);
   background: var(--rw-fill);
   border: 1px solid var(--hair);
   color: var(--ink-2);
+  font: inherit;
   font-size: .75rem;
   font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
   cursor: pointer;
-  transition: background .15s var(--rw-ease), color .15s var(--rw-ease), border-color .15s var(--rw-ease);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--rw-dur-1) var(--rw-ease),
+    color var(--rw-dur-1) var(--rw-ease),
+    border-color var(--rw-dur-1) var(--rw-ease),
+    transform var(--rw-dur-1) var(--rw-ease);
 }
-.rw-chip:hover { background: var(--rw-fill-2); color: var(--ink); }
-.rw-chip[aria-pressed="true"] {
+@media (hover: hover) {
+  .rw-chip:hover { background: var(--rw-fill-2); color: var(--ink); }
+}
+.rw-chip:active { transform: scale(var(--rw-press)); }
+.rw-chip:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) {
   background: var(--accent);
   border-color: transparent;
-  color: #fff;
+  color: var(--on-accent);
 }
 .rw-badge {
   display: inline-flex;
@@ -344,9 +449,13 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
   color: var(--ink-2);
   font-size: .6875rem;
   font-weight: 590;
+  line-height: 1.2;
   letter-spacing: .01em;
 }
 .rw-badge--accent { background: var(--accent-soft); color: var(--accent); }
+.rw-badge--ok     { background: color-mix(in srgb, var(--rw-ok) 14%, transparent); color: var(--rw-ok); }
+.rw-badge--warn   { background: color-mix(in srgb, var(--rw-warn) 14%, transparent); color: var(--rw-warn); }
+.rw-badge--danger { background: color-mix(in srgb, var(--rw-danger) 14%, transparent); color: var(--rw-danger); }
 
 /* ── Switch ───────────────────────────────────────────────────────
  * Prefer a real <input type="checkbox">: focusable, form-associated and
@@ -356,53 +465,197 @@ textarea.rw-field { resize: vertical; min-height: 5rem; }
  * is a ::after either way, so a button must not carry its own knob element.
  */
 .rw-switch {
+  --rw-dir: 1;
   appearance: none;
   -webkit-appearance: none;
   position: relative;
   flex: none;
   width: 3.125rem;
   height: 1.9375rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
   border-radius: 999px;
   background: var(--rw-fill-3);
   cursor: pointer;
-  transition: background .28s var(--rw-ease);
-  border: 0;
-  padding: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-3) var(--rw-ease);
 }
+.rw-switch:dir(rtl) { --rw-dir: -1; }
 .rw-switch::after {
   content: "";
   position: absolute;
   top: 2px;
-  left: 2px;
+  inset-inline-start: 2px;
   width: 1.6875rem;
   height: 1.6875rem;
   border-radius: 999px;
-  background: #fff;
+  background: var(--rw-knob);
   box-shadow: 0 1px 3px rgb(0 0 0 / .22), 0 0 0 .5px rgb(0 0 0 / .04);
-  transition: transform .28s var(--rw-ease);
+  transition:
+    transform var(--rw-dur-move) var(--rw-ease-spring),
+    width var(--rw-dur-2) var(--rw-ease);
 }
+/* Held down, the knob stretches toward the side it will travel to, as on iOS. */
+.rw-switch:active:not(:disabled)::after { width: 1.9375rem; }
 .rw-switch:checked,
 .rw-switch[aria-checked="true"] { background: var(--accent); }
 .rw-switch:checked::after,
-.rw-switch[aria-checked="true"]::after { transform: translateX(1.1875rem); }
+.rw-switch[aria-checked="true"]::after { transform: translateX(calc(1.1875rem * var(--rw-dir))); }
+.rw-switch:checked:active:not(:disabled)::after,
+.rw-switch[aria-checked="true"]:active:not(:disabled)::after { transform: translateX(calc(.9375rem * var(--rw-dir))); }
 .rw-switch:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── Slider ───────────────────────────────────────────────────────
+ * On a real <input type="range">. The filled part of the track reads
+ * --rw-pct, which behaviors.js (initRanges) keeps in step with the value;
+ * without the script the track is uniform and the knob alone shows the value.
+ */
+.rw-range {
+  --rw-pct: 0%;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: var(--rw-ctl-h-sm);
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+.rw-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 99px;
+  background: linear-gradient(to right, var(--accent) var(--rw-pct), var(--rw-fill-3) var(--rw-pct));
+}
+.rw-range:dir(rtl)::-webkit-slider-runnable-track {
+  background: linear-gradient(to left, var(--accent) var(--rw-pct), var(--rw-fill-3) var(--rw-pct));
+}
+.rw-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin-top: calc((4px - 1.375rem) / 2);
+  border-radius: 50%;
+  background: var(--rw-knob);
+  box-shadow: 0 1px 4px rgb(0 0 0 / .25), 0 0 0 .5px rgb(0 0 0 / .06);
+  transition: scale var(--rw-dur-1) var(--rw-ease);
+}
+.rw-range:active::-webkit-slider-thumb { scale: 1.12; }
+.rw-range::-moz-range-track { height: 4px; border-radius: 99px; background: var(--rw-fill-3); }
+.rw-range::-moz-range-progress { height: 4px; border-radius: 99px; background: var(--accent); }
+.rw-range::-moz-range-thumb {
+  width: 1.375rem;
+  height: 1.375rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--rw-knob);
+  box-shadow: 0 1px 4px rgb(0 0 0 / .25), 0 0 0 .5px rgb(0 0 0 / .06);
+}
+.rw-range:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── Progress and activity ────────────────────────────────────────
+ * .rw-progress on a real <progress>. With no value attribute it is
+ * indeterminate and a segment sweeps the track; under reduced motion it
+ * pulses in place instead.
+ */
+.rw-progress {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 4px;
+  border: 0;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--rw-fill-3);
+  color: var(--accent);
+}
+.rw-progress::-webkit-progress-bar { background: var(--rw-fill-3); border-radius: 99px; }
+.rw-progress::-webkit-progress-value { background: var(--accent); border-radius: 99px; transition: width var(--rw-dur-2) var(--rw-ease); }
+.rw-progress::-moz-progress-bar { background: var(--accent); border-radius: 99px; }
+.rw-progress:indeterminate {
+  background:
+    linear-gradient(90deg, transparent 0 35%, var(--accent) 35% 65%, transparent 65% 100%) 0 0 / 250% 100% no-repeat,
+    var(--rw-fill-3);
+  animation: rw-sweep 1.4s var(--rw-ease) infinite;
+}
+.rw-progress:indeterminate::-webkit-progress-bar { background: transparent; }
+.rw-progress:indeterminate::-moz-progress-bar { background: transparent; }
+@keyframes rw-sweep { from { background-position: 100% 0, 0 0; } to { background-position: -50% 0, 0 0; } }
+
+/* A ring spinner in the current text colour. Give it role="status" and a label. */
+.rw-spinner {
+  display: inline-block;
+  width: 1.25em;
+  height: 1.25em;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-top-color: currentColor;
+  animation: rw-spin .8s linear infinite;
+}
 
 /* ── Focus ────────────────────────────────────────────────────────
  * One ring for every control here. Fields draw their own (a border plus a
- * halo), so they opt out — two rings on one element reads as a bug.
+ * halo), so they opt out — two rings on one element reads as a bug. :where()
+ * keeps the selector list at zero weight, so a page's own focus style wins.
  */
-.rw-btn:focus-visible,
-.rw-chip:focus-visible,
-.rw-seg__item:focus-visible,
-.rw-switch:focus-visible,
-.rw-card__row:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+:where(.rw-btn, .rw-chip, .rw-switch, .rw-card--interactive, .rw-range):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+/* Segments and rows sit flush against their neighbours, so their ring is drawn
+ * just inside the edge where it cannot overlap the next one. */
+:where(.rw-seg__item, .rw-card__row):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: -2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .rw-seg__thumb, .rw-switch, .rw-switch::after,
-  .rw-btn, .rw-card--interactive { transition: none; }
-  .rw-btn:active:not(:disabled) { transform: none; }
-  .rw-card--interactive:hover { transform: none; }
+/* ── Touch ────────────────────────────────────────────────────────
+ * Small controls keep their drawn size on a phone but get an invisible hit
+ * area out to 44pt. The hit area is a ::after, so it is skipped on the switch,
+ * whose knob is its ::after (a switch is already 31pt tall and 50pt wide).
+ */
+@media (pointer: coarse) {
+  .rw-chip::after,
+  .rw-btn--sm::after {
+    content: "";
+    position: absolute;
+    inset: -6px -2px;
+  }
 }
+
+/* ── Contrast and forced colours ──────────────────────────────────── */
+@media (prefers-contrast: more) {
+  .rw-card,
+  .rw-field,
+  .rw-chip { border-color: color-mix(in srgb, var(--ink) 45%, transparent); }
+  .rw-btn:not(.rw-btn--primary, .rw-btn--plain) { border-color: color-mix(in srgb, var(--ink) 35%, transparent); }
+  .rw-switch { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 45%, transparent); }
+}
+@media (forced-colors: active) {
+  .rw-btn,
+  .rw-chip,
+  .rw-seg,
+  .rw-switch { border: 1px solid ButtonText; }
+  .rw-seg__thumb { background: Highlight; forced-color-adjust: none; }
+  .rw-seg__item:is([aria-selected="true"], [aria-checked="true"], .is-active) { color: HighlightText; forced-color-adjust: none; }
+  .rw-switch { forced-color-adjust: none; background: ButtonFace; }
+  .rw-switch::after { background: ButtonText; }
+  .rw-switch:checked,
+  .rw-switch[aria-checked="true"] { background: Highlight; }
+  .rw-switch:checked::after,
+  .rw-switch[aria-checked="true"]::after { background: HighlightText; }
+}
+
+/* Reduced motion: tokens.css already zeroes travel and press, and gives moving
+ * parts a 0s duration. The indeterminate sweep becomes a pulse and spinners
+ * slow down, so activity is still visible without anything sliding. */
+@media (prefers-reduced-motion: reduce) {
+  .rw-progress:indeterminate { background: var(--accent); animation: rw-pulse 1.6s ease-in-out infinite; }
+  .rw-spinner,
+  .rw-btn[aria-busy="true"]::before { animation-duration: 1.6s; }
+}
+@keyframes rw-pulse { 50% { opacity: .35; } }

@@ -1,0 +1,26 @@
+/* @robyrew/ui — every glass format's stylesheet in one import, for pages that
+ * do not use the Astro components (React islands, plain HTML) but use their
+ * classes, and for toast() on a page with no GlassToast in it.
+ *
+ *     @import '@robyrew/ui/tokens.css';
+ *     @import '@robyrew/ui/glass.css';
+ *
+ * In a Tailwind app, import it into the components layer like the other
+ * sheets (web-config's theme.css shows how), so utilities still win:
+ *     @import '@robyrew/ui/glass.css' layer(components);
+ *
+ * An Astro page that uses the components does not need this: each component
+ * imports its own sheet, so a page pays only for the formats it renders.
+ */
+@import './components/pct.css';
+@import './components/GlassBar.css';
+@import './components/GlassPalette.css';
+@import './components/GlassHud.css';
+@import './components/GlassPlayer.css';
+@import './components/GlassTile.css';
+@import './components/GlassList.css';
+@import './components/GlassSheet.css';
+@import './components/GlassRail.css';
+@import './components/GlassAuthCard.css';
+@import './components/GlassToast.css';
+@import './components/GlassFooter.css';

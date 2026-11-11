@@ -1,0 +1,122 @@
+/* 02 · Palette — ⌘K search.
+ *
+ * Concentric: 22px outer minus 8px padding gives 14px for the field and rows.
+ * As a modal it is a <dialog>: near the top of the viewport (where the eye is
+ * when the shortcut is pressed, and clear of a phone's keyboard), the width of
+ * a phone minus its gutters, at most 36rem.
+ */
+.rw-pal {
+  --r: var(--rw-r-glass);
+  --pad: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rw-sp-2);
+  padding: var(--pad);
+}
+.rw-pal__field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 2.5rem;
+  padding: 0 11px;
+  border-radius: calc(var(--r) - var(--pad));
+  background: var(--g-fill);
+  color: var(--g-ink-dim);
+  transition: box-shadow var(--rw-dur-1) var(--rw-ease);
+}
+.rw-pal__field:focus-within { box-shadow: inset 0 0 0 1.5px var(--rw-focus, var(--accent)); }
+.rw-pal__field input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--g-ink);
+  font: 400 max(var(--rw-field-fs), .9375rem) / 1.2 var(--g-font);
+}
+.rw-pal__field input::placeholder { color: var(--g-ink-mute); opacity: 1; }
+.rw-pal__field input::-webkit-search-cancel-button { display: none; }
+.rw-pal__kbd {
+  padding: 3px 6px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--g-hair);
+  color: var(--g-ink-mute);
+  font: 500 .6875rem/1 var(--g-mono);
+}
+@media (hover: none) and (pointer: coarse) {
+  .rw-pal__kbd { display: none; }
+}
+.rw-pal__rows {
+  display: flex;
+  flex-direction: column;
+  max-height: min(22rem, 50dvh);
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  scroll-padding-block: 4px;
+}
+.rw-pal__group {
+  display: block;
+  padding: 10px 11px 4px;
+  color: var(--g-ink-mute);
+  font: 500 .6875rem/1 var(--g-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.rw-pal__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 2.5rem;
+  padding: 0 11px;
+  border-radius: calc(var(--r) - var(--pad));
+  color: var(--g-ink-dim);
+  font-size: .8125rem;
+  text-decoration: none;
+  scroll-margin-block: 4px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), color var(--rw-dur-1) var(--rw-ease);
+}
+@media (pointer: coarse) {
+  .rw-pal__row { min-height: 2.75rem; }
+}
+@media (hover: hover) {
+  .rw-pal__row:hover { background: var(--g-fill); color: var(--g-ink); }
+}
+.rw-pal__row.is-current,
+.rw-pal__row.is-active,
+.rw-pal__row[aria-selected="true"] { background: var(--g-fill-2); color: var(--g-ink); }
+.rw-pal__row:active { background: var(--g-fill-3); }
+.rw-pal__row:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: -2px;
+}
+.rw-pal__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rw-pal__tail { margin-inline-start: auto; flex: none; color: var(--g-ink-mute); font: 500 .6875rem/1 var(--g-mono); }
+.rw-pal__empty { margin: 0; padding: 14px 11px; color: var(--g-ink-mute); font-size: .8125rem; text-align: center; }
+
+/* ── As a modal ───────────────────────────────────────────────────── */
+dialog.rw-pal {
+  position: fixed;
+  inset: 0;
+  top: max(10dvh, calc(env(safe-area-inset-top, 0px) + 1rem));
+  width: min(36rem, 100% - 1.5rem);
+  max-width: none;
+  height: fit-content;
+  max-height: calc(100dvh - 20dvh);
+  margin: 0 auto;
+  border: 0;
+  overflow: hidden;
+  transform-origin: top center;
+}
+dialog.rw-pal:not([open]) { display: none; }
+dialog.rw-pal[open] { animation: rw-pop var(--rw-dur-3) var(--rw-ease-spring) both; }
+dialog.rw-pal.is-closing { animation: rw-pop-out var(--rw-dur-2) var(--rw-ease) both; }
+dialog.rw-pal::backdrop {
+  background: var(--rw-scrim, rgb(0 0 0 / .4));
+  animation: rw-fade-in var(--rw-dur-2) ease both;
+}
+dialog.rw-pal.is-closing::backdrop { animation: rw-fade-out var(--rw-dur-2) ease both; }

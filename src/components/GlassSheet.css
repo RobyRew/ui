@@ -1,0 +1,157 @@
+/* 07 · Sheet.
+ *
+ * Inline (the default) it is a specimen in the page flow: top corners only,
+ * anchored rather than floating. As a modal (`modal`) it is a <dialog>:
+ *  - under 48rem of viewport width (phones, iPad split view) it docks to the
+ *    bottom edge, clears the home indicator, and can be dragged down;
+ *  - wider (iPad, desktop) it becomes a centred form sheet with all four
+ *    corners rounded.
+ * --rw-sheet-docked publishes which of the two is in force, so
+ * behaviors/sheet.js only offers the drag when the sheet is docked.
+ */
+.rw-sheet {
+  --r: var(--rw-r-glass-lg);
+  --pad: 16px;
+  border-radius: var(--r) var(--r) 0 0;
+  padding: 10px var(--pad) 18px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rw-sp-3);
+}
+.rw-sheet__grab {
+  width: 36px;
+  height: 5px;
+  flex: none;
+  align-self: center;
+  border-radius: 99px;
+  background: var(--g-fill-3);
+}
+.rw-sheet__drag { display: flex; flex-direction: column; gap: var(--rw-sp-2); flex: none; }
+.rw-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-sp-3);
+  min-height: 2.25rem;
+}
+.rw-sheet__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: var(--g-ink);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+.rw-sheet__close-form { margin: 0; display: contents; }
+.rw-sheet__close {
+  display: grid;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--g-fill-2);
+  color: var(--g-ink-dim);
+  font-size: .8125rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-sheet__close:hover { background: var(--g-fill-3); color: var(--g-ink); }
+}
+.rw-sheet__close:active { transform: scale(calc(var(--rw-press) - .05)); }
+.rw-sheet__body {
+  color: var(--g-ink-dim);
+  font-size: .875rem;
+  line-height: 1.5;
+}
+.rw-sheet__foot { margin: 0; display: flex; flex-direction: column; gap: var(--rw-sp-2); }
+.rw-sheet__cta {
+  min-height: 2.875rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: calc(var(--r) - var(--pad));
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 650 .9375rem/1 var(--g-font);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-sheet__cta:hover { background: color-mix(in oklab, var(--accent) 88%, var(--ink)); }
+}
+.rw-sheet__cta:active { transform: scale(var(--rw-press)); }
+
+:where(.rw-sheet__close, .rw-sheet__cta):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+
+/* ── As a modal dialog ────────────────────────────────────────────── */
+dialog.rw-sheet {
+  --rw-sheet-docked: 1;
+  position: fixed;
+  inset: auto 0 0 0;
+  width: min(100%, 40rem);
+  max-width: none;
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 1.5rem);
+  margin: 0 auto;
+  border: 0;
+  padding-bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 10px));
+  overflow: hidden;
+  translate: 0 var(--rw-drag, 0px);
+  transition: translate var(--rw-dur-3) var(--rw-ease-spring);
+}
+dialog.rw-sheet:not([open]) { display: none; }
+dialog.rw-sheet[open] { animation: rw-sheet-up var(--rw-dur-4) var(--rw-ease-spring) both; }
+dialog.rw-sheet.is-closing { animation: rw-sheet-down var(--rw-dur-3) var(--rw-ease) both; }
+dialog.rw-sheet.is-dragging { transition: none; }
+dialog.rw-sheet .rw-sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+/* The handle and the header are the drag zone; the page must not scroll
+ * underneath a finger that is pulling the sheet. */
+dialog.rw-sheet [data-rw-sheet-drag] { touch-action: none; cursor: grab; }
+dialog.rw-sheet.is-dragging [data-rw-sheet-drag] { cursor: grabbing; }
+dialog.rw-sheet::backdrop {
+  background: var(--rw-scrim, rgb(0 0 0 / .4));
+  animation: rw-fade-in var(--rw-dur-3) ease both;
+}
+dialog.rw-sheet.is-closing::backdrop { animation: rw-fade-out var(--rw-dur-3) ease both; }
+.rw-sheet--medium { min-height: min(50dvh, 100%); }
+.rw-sheet--large { height: calc(100dvh - env(safe-area-inset-top, 0px) - 2.5rem); }
+
+/* The page behind a modal sheet does not scroll. */
+html:has(dialog.rw-sheet[open]) { overflow: hidden; }
+
+/* With --rw-travel at 1 the sheet slides fully opaque; at 0 (reduced motion)
+ * it stays put and fades. */
+@keyframes rw-sheet-up { from { transform: translateY(calc(100% * var(--rw-travel))); opacity: var(--rw-travel); } }
+@keyframes rw-sheet-down { to { transform: translateY(calc(100% * var(--rw-travel))); opacity: var(--rw-travel); } }
+
+/* Wide and tall enough: a centred form sheet. */
+@media (min-width: 48rem) and (min-height: 32rem) {
+  dialog.rw-sheet {
+    --rw-sheet-docked: 0;
+    inset: 0;
+    width: min(34rem, 100% - 4rem);
+    max-height: min(46rem, 100dvh - 4rem);
+    height: fit-content;
+    margin: auto;
+    border-radius: var(--r);
+    padding-bottom: 18px;
+  }
+  dialog.rw-sheet .rw-sheet__grab { display: none; }
+  dialog.rw-sheet[open] { animation: rw-pop var(--rw-dur-3) var(--rw-ease-spring) both; }
+  dialog.rw-sheet.is-closing { animation: rw-pop-out var(--rw-dur-2) var(--rw-ease) both; }
+  .rw-sheet--large { height: min(46rem, 100dvh - 4rem); }
+}

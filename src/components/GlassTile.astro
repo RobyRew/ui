@@ -1,36 +1,60 @@
 ---
-/** 05 · Stat tile — number-led. Square, big figure, sparkline. */
-interface Props { label: string; value: string; delta?: string; trend?: 'up' | 'down';
-  spark?: number[]; class?: string }
-const { label, value, delta, trend = 'up', spark = [], class: cls = '' } = Astro.props;
+/** 05 · Stat tile — number-led. Square, big figure, sparkline.
+ *
+ *  The figure scales with the tile's own width. The trend arrow is announced
+ *  in words (labels.up / labels.down), not left to a glyph. With `href` the
+ *  whole tile is a link and lifts on hover.
+ */
+import './pct.css';
+import './GlassTile.css';
+
+interface Props {
+  label: string;
+  value: string;
+  delta?: string;
+  trend?: 'up' | 'down' | 'flat';
+  spark?: number[];
+  href?: string;
+  labels?: { up?: string; down?: string; flat?: string; spark?: string };
+  theme?: 'light' | 'dark';
+  material?: 'glass' | 'surface';
+  class?: string;
+}
+const {
+  label,
+  value,
+  delta,
+  trend = 'up',
+  spark = [],
+  href,
+  labels = {},
+  theme,
+  material = 'glass',
+  class: cls = '',
+} = Astro.props;
 const max = Math.max(1, ...spark);
+const glyph = { up: '▲', down: '▼', flat: '▬' }[trend];
+const trendWord = { up: labels.up ?? 'up', down: labels.down ?? 'down', flat: labels.flat ?? 'unchanged' }[trend];
+const Tag = href ? 'a' : 'article';
 ---
-<article class:list={['rw-tile', 'rw-glass', cls]}>
+<Tag
+  class:list={['rw-tile', material === 'surface' ? 'rw-surface' : 'rw-glass', { 'rw-tile--link': href }, cls]}
+  href={href}
+  data-theme={theme}
+>
   <span class="rw-tile__label">{label}</span>
   <span class="rw-tile__value">{value}</span>
   {delta && (
     <span class:list={['rw-tile__delta', trend]}>
-      <span class="rw-gl" aria-hidden="true">{trend === 'up' ? '▲' : '▼'}</span>{delta}
+      <span class="rw-gl" aria-hidden="true">{glyph}</span><span class="rw-sr-only">{trendWord} </span>{delta}
     </span>
   )}
+  <slot />
   {spark.length > 0 && (
-    <div class="rw-tile__spark" role="img" aria-label={`Trend: ${spark.join(', ')}`}>
+    <div class="rw-tile__spark" role="img" aria-label={`${labels.spark ?? 'Trend'}: ${spark.join(', ')}`}>
       {spark.map((n, i) => (
-        <i style={`height:${Math.round((n / max) * 100)}%`} class:list={{ last: i === spark.length - 1 }}></i>
+        <i data-pct={Math.round((Math.max(0, n) / max) * 100)} class:list={{ last: i === spark.length - 1 }}></i>
       ))}
     </div>
   )}
-</article>
-
-<style>
-  .rw-tile { --r: 24px; padding: 18px; display: flex; flex-direction: column; gap: 4px; min-height: 196px; }
-  .rw-tile__label { font: 500 .68rem/1 var(--g-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--g-ink-mute); }
-  /* Tabular figures so the number does not jitter as it updates. */
-  .rw-tile__value { font-size: 2.6rem; font-weight: 800; letter-spacing: -.04em; line-height: 1.05;
-    color: var(--g-ink); font-variant-numeric: tabular-nums; }
-  .rw-tile__delta { font-size: .78rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-  .rw-tile__delta.up { color: #6ee7a8; } .rw-tile__delta.down { color: #ff8f8f; }
-  .rw-tile__spark { margin-top: auto; display: flex; align-items: flex-end; gap: 3px; height: 34px; }
-  .rw-tile__spark i { flex: 1; border-radius: 2px 2px 0 0; background: rgb(var(--rim-rgb) / .3); }
-  .rw-tile__spark i.last { background: rgb(var(--rim-rgb) / .9); }
-</style>
+</Tag>

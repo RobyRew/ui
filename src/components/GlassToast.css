@@ -1,0 +1,126 @@
+/* 10 · Toast — shortest and widest. Tightest radius in the set: a transient
+ * strip should not read as a card.
+ *
+ * A size container: under 20rem (a watch, a narrow phone column) the actions
+ * drop under the message instead of squeezing it.
+ */
+.rw-toast {
+  --r: var(--rw-r-glass-sm);
+  --pad: 10px;
+  container-type: inline-size;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rw-sp-2) var(--rw-sp-3);
+  padding: var(--pad);
+  padding-inline-start: 12px;
+  touch-action: pan-y;
+  translate: var(--rw-drag-x, 0px) 0;
+  opacity: var(--rw-drag-fade, 1);
+  transition: translate var(--rw-dur-3) var(--rw-ease-spring), opacity var(--rw-dur-2) var(--rw-ease);
+}
+.rw-toast.is-dragging { transition: none; }
+.rw-toast__icon {
+  --tone: var(--rw-ok);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: calc(var(--r) - var(--pad));
+  background: color-mix(in srgb, var(--tone) 18%, transparent);
+  color: var(--tone);
+  font-size: .875rem;
+}
+.rw-toast__icon.warn  { --tone: var(--rw-warn); }
+.rw-toast__icon.error { --tone: var(--rw-danger); }
+.rw-toast__icon.info  { --tone: var(--g-ink-dim); }
+.rw-toast__msg {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  color: var(--g-ink);
+  font-size: .8125rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.rw-toast__msg b { font-weight: 650; }
+.rw-toast__msg span { color: var(--g-ink-dim); }
+.rw-toast__act { display: flex; align-items: center; gap: 6px; flex: none; margin-inline-start: auto; }
+.rw-toast__act :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.875rem;
+  min-width: 1.875rem;
+  padding: 0 .6875rem;
+  border: 0;
+  border-radius: calc(var(--r) - var(--pad));
+  background: var(--g-fill-2);
+  color: var(--g-ink);
+  font: 650 .75rem/1 var(--g-font);
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+.rw-toast__act button.rw-gl { padding: 0; font-family: var(--g-glyph); }
+@media (hover: hover) {
+  .rw-toast__act :is(a, button):hover { background: var(--g-fill-3); }
+}
+.rw-toast__act :is(a, button):active { transform: scale(var(--rw-press)); }
+.rw-toast__act :is(a, button):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+@media (pointer: coarse) {
+  .rw-toast__act :is(a, button) { min-height: 2.25rem; min-width: 2.25rem; }
+}
+@container (width < 20rem) {
+  .rw-toast__act { flex-basis: 100%; justify-content: flex-end; }
+}
+
+.rw-toast.is-leaving { animation: rw-toast-out var(--rw-dur-2) var(--rw-ease) both; pointer-events: none; }
+@keyframes rw-toast-out { to { opacity: 0; transform: scale(calc(1 - .04 * var(--rw-travel))); } }
+
+/* ── The region toast() raises into ───────────────────────────────
+ * Top on phones (under the notch), top-right from 48rem. The newest toast is
+ * the last child, drawn nearest the edge; past three, the oldest are hidden
+ * until there is room. --rw-toast-offset moves the top region down past a
+ * sticky bar (web-config sets it when the page has a .glass-float shell).
+ */
+.rw-toaster {
+  position: fixed;
+  z-index: 90;
+  inset-inline: 0;
+  top: calc(max(.75rem, env(safe-area-inset-top, 0px)) + var(--rw-toast-offset, 0px));
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 8px;
+  padding-inline: max(.75rem, env(safe-area-inset-left, 0px)) max(.75rem, env(safe-area-inset-right, 0px));
+  pointer-events: none;
+}
+.rw-toaster--bottom {
+  top: auto;
+  bottom: max(.75rem, env(safe-area-inset-bottom, 0px));
+  flex-direction: column;
+}
+.rw-toaster > .rw-toast {
+  width: min(100%, 26rem);
+  pointer-events: auto;
+  animation: rw-toast-in var(--rw-dur-4) var(--rw-ease-spring) both;
+}
+.rw-toaster--bottom > .rw-toast { animation-name: rw-toast-in-up; }
+.rw-toaster > .rw-toast.is-leaving { animation: rw-toast-out var(--rw-dur-2) var(--rw-ease) both; }
+.rw-toaster > .rw-toast:nth-last-child(n + 4) { display: none; }
+@media (min-width: 48rem) {
+  .rw-toaster { align-items: flex-end; padding-inline: 1.25rem; }
+}
+@keyframes rw-toast-in {
+  from { opacity: 0; transform: translateY(calc(-14px * var(--rw-travel))) scale(calc(1 - .04 * var(--rw-travel))); }
+}
+@keyframes rw-toast-in-up {
+  from { opacity: 0; transform: translateY(calc(14px * var(--rw-travel))) scale(calc(1 - .04 * var(--rw-travel))); }
+}

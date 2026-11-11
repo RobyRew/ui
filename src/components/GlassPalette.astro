@@ -1,39 +1,98 @@
 ---
-/** 02 · Palette — ⌘K search. Concentric: 20px outer minus 11px padding = 11px rows. */
-export interface PaletteRow { glyph?: string; label: string; tail?: string; href?: string; current?: boolean }
-interface Props { placeholder?: string; rows: PaletteRow[]; class?: string }
-const { placeholder = 'Jump to…', rows, class: cls = '' } = Astro.props;
+/** 02 · Palette — ⌘K search.
+ *
+ *  Typing filters the rows (case- and accent-folded, every word must match the
+ *  label or the row's `keywords`); arrow keys move the highlight, Enter follows
+ *  it, Escape clears and then closes. Rows with a `group` get a heading when
+ *  the group changes. Without the script it is a plain list of links.
+ *
+ *  With `modal` it is a <dialog> that ⌘K / Ctrl+K (or `shortcut`) toggles;
+ *  open it from a button with commandfor={id} command="show-modal" as well.
+ *  Choosing a row dispatches rw:select (detail: { row, value }) first —
+ *  preventDefault() on it keeps the link from being followed.
+ */
+import './GlassPalette.css';
+import { uid } from '../behaviors/core.js';
+
+export interface PaletteRow {
+  glyph?: string;
+  label: string;
+  tail?: string;
+  href?: string;
+  current?: boolean;
+  keywords?: string;
+  group?: string;
+  value?: string;
+}
+interface Props {
+  placeholder?: string;
+  rows: PaletteRow[];
+  modal?: boolean;
+  id?: string;
+  /** The key pressed with ⌘ or Ctrl to toggle a modal palette. */
+  shortcut?: string | false;
+  labels?: { dialog?: string; empty?: string; results?: string; close?: string };
+  theme?: 'light' | 'dark';
+  material?: 'glass' | 'surface';
+  class?: string;
+}
+const {
+  placeholder = 'Jump to…',
+  rows,
+  modal = false,
+  id = uid('rw-pal'),
+  shortcut = 'k',
+  labels = {},
+  theme,
+  material = 'glass',
+  class: cls = '',
+} = Astro.props;
+const surface = material === 'surface' ? 'rw-surface' : 'rw-glass';
+const listId = `${id}-rows`;
+const Root = modal ? 'dialog' : 'div';
+let lastGroup: string | undefined;
 ---
-<div class:list={['rw-pal', 'rw-glass', cls]} role="dialog" aria-label="Command palette">
+<Root
+  id={modal ? id : Astro.props.id}
+  class:list={['rw-pal', surface, cls]}
+  role={modal ? undefined : 'search'}
+  aria-label={labels.dialog ?? 'Command palette'}
+  data-theme={theme}
+  data-rw-palette
+  data-rw-palette-dialog={modal ? '' : undefined}
+  data-rw-shortcut={modal && shortcut ? String(shortcut).toLowerCase() : undefined}
+>
   <div class="rw-pal__field">
     <span class="rw-gl" aria-hidden="true">⌕</span>
-    <input type="search" placeholder={placeholder} aria-label={placeholder} />
+    <input type="search" placeholder={placeholder} aria-label={placeholder} autocomplete="off"
+           spellcheck="false" enterkeyhint="go" autofocus={modal || undefined} />
+    {modal && <kbd class="rw-pal__kbd" aria-hidden="true">esc</kbd>}
   </div>
-  <ul class="rw-pal__rows">
-    {rows.map((r) => (
-      <li>
-        <a href={r.href ?? '#'} class:list={['rw-pal__row', { 'is-current': r.current }]}>
-          {r.glyph && <span class="rw-gl" aria-hidden="true">{r.glyph}</span>}
-          <span>{r.label}</span>
-          {r.tail && <span class="rw-pal__tail rw-gl">{r.tail}</span>}
-        </a>
-      </li>
-    ))}
+  <ul class="rw-pal__rows" id={listId}>
+    {rows.map((r) => {
+      const heading = r.group && r.group !== lastGroup ? r.group : undefined;
+      lastGroup = r.group;
+      return (
+        <>
+          {heading && <li><span class="rw-pal__group">{heading}</span></li>}
+          <li>
+            <a href={r.href ?? '#'} class:list={['rw-pal__row', { 'is-current': r.current }]}
+               aria-current={r.current ? 'page' : undefined} data-keywords={r.keywords} data-value={r.value}>
+              {r.glyph && <span class="rw-gl" aria-hidden="true">{r.glyph}</span>}
+              <span class="rw-pal__label">{r.label}</span>
+              {r.tail && <span class="rw-pal__tail rw-gl">{r.tail}</span>}
+            </a>
+          </li>
+        </>
+      );
+    })}
   </ul>
-</div>
+  <p class="rw-pal__empty" hidden>{labels.empty ?? 'No results'}</p>
+  <p class="rw-sr-only rw-pal__status" aria-live="polite" data-template={labels.results ?? '{n} results'}></p>
+</Root>
 
-<style>
-  .rw-pal { --r: 20px; padding: 11px; display: flex; flex-direction: column; gap: 9px; }
-  .rw-pal__field { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border-radius: 11px;
-    background: rgb(var(--rim-rgb) / .09); color: var(--g-ink-dim); }
-  .rw-pal__field input { flex: 1; min-width: 0; background: none; border: 0; outline: none;
-    font: 400 .9rem/1 var(--g-font); color: var(--g-ink); }
-  .rw-pal__field input::placeholder { color: var(--g-ink-mute); }
-  .rw-pal__field:focus-within { box-shadow: inset 0 0 0 1.5px rgb(var(--rim-rgb) / .4); }
-  .rw-pal__rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-  .rw-pal__row { display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 11px;
-    font-size: .82rem; color: var(--g-ink-dim); text-decoration: none; }
-  .rw-pal__row:hover, .rw-pal__row.is-current { background: rgb(var(--rim-rgb) / .14); color: var(--g-ink); }
-  .rw-pal__row:focus-visible { outline: 2px solid var(--g-ink); outline-offset: -2px; }
-  .rw-pal__tail { margin-left: auto; font: 500 .68rem/1 var(--g-mono); color: var(--g-ink-mute); }
-</style>
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initPalettes } from '../behaviors/palette.js';
+  onReady(initPalettes);
+</script>

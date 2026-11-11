@@ -1,0 +1,134 @@
+/* 04 · Player — media format. The artwork is opaque and sits UNDER the glass:
+ * content layer, never glass on glass.
+ *
+ * A size container. Wide, it is one row: art, title and progress, transport.
+ * Under 20rem the transport drops to its own row, centred and larger — the
+ * phone and watch arrangement.
+ */
+.rw-player {
+  --r: var(--rw-r-glass);
+  --pad: 12px;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--rw-sp-3);
+  padding: var(--pad);
+}
+.rw-player__art {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: none;
+  overflow: hidden;
+  border-radius: calc(var(--r) - var(--pad));
+  background: var(--g-fill-2);
+  box-shadow: inset 0 0 0 1px var(--g-hair);
+}
+.rw-player__art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.rw-player__meta { min-width: 0; }
+.rw-player__title,
+.rw-player__sub { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rw-player__title { color: var(--g-ink); font-size: .875rem; font-weight: 700; }
+.rw-player__sub { color: var(--g-ink-dim); font-size: .8125rem; }
+
+.rw-player__bar {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 99px;
+  background: var(--g-track);
+}
+.rw-player__bar i {
+  display: block;
+  width: var(--rw-pct, 0%);
+  height: 100%;
+  border-radius: 99px;
+  background: var(--g-meter);
+  transition: width 250ms linear;
+}
+
+/* Seekable: a range input drawn as the same thin bar, which thickens and
+ * shows its knob under the pointer or the keyboard. */
+.rw-player__seek {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 18px;
+  margin: 2px 0 -4px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.rw-player__seek::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 99px;
+  background: linear-gradient(to right, var(--g-meter) var(--rw-pct, 0%), var(--g-track) var(--rw-pct, 0%));
+  transition: height var(--rw-dur-1) var(--rw-ease);
+}
+.rw-player__seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--g-ink);
+  scale: 0;
+  transition: scale var(--rw-dur-1) var(--rw-ease);
+}
+.rw-player__seek:is(:hover, :focus-visible, :active)::-webkit-slider-runnable-track { height: 6px; }
+.rw-player__seek:is(:hover, :focus-visible, :active)::-webkit-slider-thumb { scale: 1; margin-top: -3px; }
+.rw-player__seek::-moz-range-track { height: 4px; border-radius: 99px; background: var(--g-track); }
+.rw-player__seek::-moz-range-progress { height: 4px; border-radius: 99px; background: var(--g-meter); }
+.rw-player__seek::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--g-ink); }
+.rw-player__seek:focus-visible { outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent)); outline-offset: 4px; border-radius: 4px; }
+
+.rw-player__time {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  color: var(--g-ink-mute);
+  font: 500 .6875rem/1 var(--g-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.rw-player__transport { display: flex; align-items: center; gap: 2px; }
+.rw-player__transport button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--g-ink);
+  font-size: 1.05rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+.rw-player__transport .rw-player__play { width: 2.5rem; height: 2.5rem; font-size: 1.2rem; }
+@media (hover: hover) {
+  .rw-player__transport button:hover { background: var(--g-fill); }
+}
+.rw-player__transport button:active { transform: scale(calc(var(--rw-press) - .05)); background: var(--g-fill-2); }
+.rw-player__transport button:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+@media (pointer: coarse) {
+  .rw-player__transport button { width: 2.75rem; height: 2.75rem; }
+  .rw-player__transport .rw-player__play { width: 3rem; height: 3rem; }
+}
+
+@container (width < 20rem) {
+  .rw-player__art { width: 2.75rem; height: 2.75rem; }
+  .rw-player__meta { grid-column: 2 / -1; }
+  .rw-player__transport { grid-column: 1 / -1; justify-content: center; gap: var(--rw-sp-3); }
+  .rw-player__transport .rw-player__play { width: 3rem; height: 3rem; font-size: 1.35rem; }
+}
+@container (width < 13rem) {
+  .rw-player__art { display: none; }
+  .rw-player__meta { grid-column: 1 / -1; }
+}

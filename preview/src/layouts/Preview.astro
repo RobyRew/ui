@@ -1,0 +1,30 @@
+---
+import '@robyrew/ui/tokens.css';
+import '@robyrew/ui/controls.css';
+import '../styles/preview.css';
+import { themeBootstrap } from '@robyrew/ui/theme.js';
+
+interface Props { title: string }
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover lets the safe-area insets reach the CSS (notch, home indicator). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- watchOS lays pages out at 320px and scales them down unless told the page adapts itself. -->
+    <meta name="disabled-adaptations" content="watch" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#090909" />
+    <title>{title}</title>
+    <script is:inline set:html={themeBootstrap} />
+  </head>
+  <body>
+    <slot />
+    <script>
+      import { autoInit } from '@robyrew/ui/behaviors.js';
+      autoInit();
+    </script>
+  </body>
+</html>

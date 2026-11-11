@@ -1,0 +1,41 @@
+---
+import Preview from '../layouts/Preview.astro';
+import GlassBar from '@robyrew/ui/components/GlassBar.astro';
+
+/** The gallery in device-sized frames. Each iframe has the device's CSS
+ *  viewport, so media and container queries see what the device would; the
+ *  frame is then scaled down to fit. Pointer and hover still come from this
+ *  browser, so touch metrics only show on a real touch device. */
+const devices = [
+  { name: 'Apple Watch 45 mm', w: 198, h: 242, scale: 1, radius: 44 },
+  { name: 'Apple Watch Ultra', w: 205, h: 251, scale: 1, radius: 48 },
+  { name: 'iPhone 16', w: 393, h: 852, scale: 0.62, radius: 34 },
+  { name: 'iPhone SE', w: 375, h: 667, scale: 0.62, radius: 18 },
+  { name: 'iPad mini (portrait)', w: 744, h: 1133, scale: 0.42, radius: 22 },
+  { name: 'iPad Air 11″ (landscape)', w: 1180, h: 820, scale: 0.42, radius: 22 },
+];
+---
+<Preview title="@robyrew/ui — devices">
+  <div class="pv-float rw-scroll-edge">
+    <GlassBar links={[{ label: 'Gallery', href: '/' }, { label: 'Devices', href: '/devices', current: true }]}>
+      <span slot="brand" class="pv-word">rw<span>/ui</span></span>
+    </GlassBar>
+  </div>
+  <main class="pv-wrap">
+    <header class="pv-intro">
+      <span class="pv-kicker">Devices</span>
+      <h1>The gallery at device widths.</h1>
+      <p>Each frame is a live page with that device's viewport. Watch frames show the layout a page gets once it sends <code>&lt;meta name="disabled-adaptations" content="watch"&gt;</code>; without it watchOS lays the page out at 320px and scales it down.</p>
+    </header>
+    <div class="pv-devices">
+      {devices.map((d) => (
+        <figure class="pv-device" style={`--pv-radius:${d.radius * d.scale}px`}>
+          <div class="pv-device__frame" style={`width:${Math.round(d.w * d.scale)}px;height:${Math.round(d.h * d.scale)}px`}>
+            <iframe src="/" title={d.name} width={d.w} height={d.h} loading="lazy" style={`width:${d.w}px;height:${d.h}px;transform:scale(${d.scale})`}></iframe>
+          </div>
+          <figcaption><b>{d.name}</b> · {d.w} × {d.h}{d.scale !== 1 && ` · shown at ${Math.round(d.scale * 100)}%`}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </main>
+</Preview>

@@ -1,0 +1,64 @@
+/* 03 · HUD — smallest and densest. Transient overlay; the one place a large
+ * radius on a small box reads correctly.
+ *
+ * .rw-hud--overlay floats it in the middle of the viewport, hidden until
+ * showHud() adds .is-shown — it fades and settles in, and fades out after a
+ * moment of quiet.
+ */
+.rw-hud {
+  --r: var(--rw-r-glass-lg);
+  --pad: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(10.5rem, 100%);
+  padding: var(--pad);
+}
+.rw-hud__glyph { color: var(--g-ink); font-size: 2.5rem; }
+.rw-hud__track {
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--g-track);
+}
+.rw-hud__fill {
+  width: var(--rw-pct, 0%);
+  height: 100%;
+  border-radius: 99px;
+  background: var(--g-meter);
+  transition: width var(--rw-dur-2) var(--rw-ease-out);
+}
+.rw-hud__cap {
+  color: var(--g-ink-mute);
+  font: 500 .6875rem/1.2 var(--g-mono);
+  letter-spacing: .1em;
+  text-align: center;
+}
+
+.rw-glass.rw-hud--overlay,
+.rw-surface.rw-hud--overlay {
+  position: fixed;
+  z-index: 95;
+  inset: 0;
+  height: fit-content;
+  margin: auto;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(calc(1 - .06 * var(--rw-travel)));
+  transition:
+    opacity var(--rw-dur-3) var(--rw-ease),
+    transform var(--rw-dur-3) var(--rw-ease-spring),
+    visibility 0s linear var(--rw-dur-3);
+}
+.rw-hud--overlay.is-shown {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--rw-dur-2) var(--rw-ease),
+    transform var(--rw-dur-3) var(--rw-ease-spring),
+    visibility 0s;
+}

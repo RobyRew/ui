@@ -1,0 +1,102 @@
+/* 09 · Auth card — inputs are recessed rather than raised. Exactly one filled
+ * control, and it is the primary action: the accent, as everywhere else.
+ *
+ * Concentric: 28px outer minus 16px padding gives 12px fields and button.
+ * Fields are 16px on a coarse pointer, so iOS does not zoom on focus.
+ */
+.rw-auth {
+  --r: var(--rw-r-glass-lg);
+  --pad: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px var(--pad) var(--pad);
+}
+.rw-auth__title {
+  margin: 0;
+  color: var(--g-ink);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+.rw-auth__sub { margin: -4px 0 2px; color: var(--g-ink-dim); font-size: .8125rem; line-height: 1.45; }
+.rw-auth label { display: flex; flex-direction: column; gap: 6px; color: var(--g-ink-dim); font-size: .8125rem; font-weight: 590; }
+
+.rw-auth :is(input:not([type="checkbox"], [type="radio"], [type="submit"], [type="button"], [type="hidden"], [type="range"]), textarea, select) {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 13px;
+  border: 0;
+  border-radius: calc(var(--r) - var(--pad));
+  background: var(--g-fill);
+  box-shadow: inset 0 0 0 1px var(--g-hair);
+  color: var(--g-ink);
+  font: 400 var(--rw-field-fs) / 1.2 var(--g-font);
+  outline: none;
+  transition: box-shadow var(--rw-dur-1) var(--rw-ease), background-color var(--rw-dur-1) var(--rw-ease);
+}
+.rw-auth textarea { padding-block: 11px; min-height: 5rem; resize: vertical; }
+.rw-auth ::placeholder { color: var(--g-ink-mute); opacity: 1; }
+@media (hover: hover) {
+  .rw-auth :is(input, textarea, select):hover:not(:focus) { background: var(--g-fill-2); }
+}
+.rw-auth :is(input, textarea, select):focus-visible {
+  box-shadow:
+    inset 0 0 0 1.5px var(--rw-focus, var(--accent)),
+    0 0 0 3px color-mix(in srgb, var(--rw-focus, var(--accent)) 25%, transparent);
+}
+.rw-auth :is(input, textarea, select):is([aria-invalid="true"], :user-invalid) {
+  box-shadow:
+    inset 0 0 0 1.5px var(--rw-danger),
+    0 0 0 3px color-mix(in srgb, var(--rw-danger) 20%, transparent);
+}
+/* Autofill keeps the glass fill instead of the browser's yellow or blue. */
+.rw-auth input:-webkit-autofill {
+  -webkit-text-fill-color: var(--g-ink);
+  caret-color: var(--g-ink);
+  box-shadow: inset 0 0 0 100vmax color-mix(in srgb, var(--accent) 10%, rgb(var(--glass-rgb))), inset 0 0 0 1px var(--g-hair);
+}
+.rw-auth input[type="checkbox"],
+.rw-auth input[type="radio"] { width: 1.05rem; height: 1.05rem; margin: 0; accent-color: var(--accent); }
+
+.rw-auth__go {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 2.875rem;
+  margin-top: 2px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: calc(var(--r) - var(--pad));
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 650 .9375rem/1 var(--g-font);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-auth__go:hover { background: color-mix(in oklab, var(--accent) 88%, var(--ink)); }
+}
+.rw-auth__go:active { transform: scale(var(--rw-press)); }
+.rw-auth__go:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+.rw-auth__go[aria-busy="true"] { cursor: progress; pointer-events: none; }
+.rw-auth__go[aria-busy="true"]::before {
+  content: "";
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  animation: rw-spin .8s linear infinite;
+}
+
+.rw-auth__alt { margin: 0; color: var(--g-ink-mute); font-size: .75rem; text-align: center; }
+.rw-auth a { color: var(--accent); text-underline-offset: 2px; }
+.rw-auth a:focus-visible { outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent)); outline-offset: 2px; border-radius: 3px; }

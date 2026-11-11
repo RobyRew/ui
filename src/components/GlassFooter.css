@@ -1,0 +1,90 @@
+/* 11 · Footer — the counterpart to GlassBar.
+ *
+ * Columns fill the width at no less than 9rem each, so a phone gets one or two
+ * and a desktop several. Under 30rem behaviors/footer.js folds each column
+ * into a disclosure (.is-collapsible); the CSS below draws that state.
+ */
+.rw-footer {
+  --r: var(--rw-r-glass);
+  --pad: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: var(--pad);
+}
+@media (max-width: 30rem) {
+  .rw-footer { --pad: 16px; }
+}
+.rw-footer__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: 20px;
+}
+.rw-footer__title {
+  margin: 0 0 8px;
+  color: var(--g-ink-mute);
+  font: 500 .6875rem/1.2 var(--g-mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.rw-footer__col ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.rw-footer__col a {
+  display: inline-block;
+  padding-block: 4px;
+  color: var(--g-ink-dim);
+  font-size: .8125rem;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-footer__col a:hover { color: var(--g-ink); }
+}
+.rw-footer__col a:active { color: var(--g-ink); }
+.rw-footer__col a:focus-visible,
+.rw-footer__toggle:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.rw-footer__ext { margin-inline-start: .25em; color: var(--g-ink-mute); }
+.rw-footer__base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  box-shadow: inset 0 1px 0 var(--g-hair);
+}
+.rw-footer__note { margin: 0; color: var(--g-ink-mute); font-size: .75rem; }
+
+/* ── Folded (narrow, with the script) ─────────────────────────────── */
+.rw-footer.is-compact .rw-footer__grid { gap: 0; grid-template-columns: 1fr; }
+.rw-footer__col.is-collapsible + .rw-footer__col.is-collapsible { box-shadow: inset 0 1px 0 var(--g-hair); }
+.rw-footer__col.is-collapsible .rw-footer__title { margin: 0; }
+.rw-footer__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rw-footer__chev {
+  color: var(--g-ink-mute);
+  font-size: 1rem;
+  transform: rotate(90deg);
+  transition: transform var(--rw-dur-3) var(--rw-ease-spring);
+}
+.rw-footer__col.is-open .rw-footer__chev { transform: rotate(-90deg); }
+.rw-footer__col.is-collapsible:not(.is-open) ul { display: none; }
+.rw-footer__col.is-collapsible.is-open ul { padding-bottom: 12px; animation: rw-rise var(--rw-dur-3) var(--rw-ease-out) both; }

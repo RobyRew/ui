@@ -1,0 +1,131 @@
+/* 08 · Rail — the vertical format. Glyph-only by default, so it survives at
+ * 56px wide.
+ *
+ * Horizontal it is a tab bar: glyphs over short labels, the shape a phone uses
+ * for the same navigation. "adaptive" switches between the two at 48rem of
+ * viewport width, and .rw-rail--dock pins the horizontal form to the bottom
+ * edge above the home indicator.
+ */
+.rw-rail {
+  --r: var(--rw-r-glass);
+  --pad: 8px;
+  --rw-rail-item: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  padding: var(--pad);
+}
+@media (pointer: coarse) {
+  .rw-rail { --rw-rail-item: 44px; }
+}
+.rw-rail__item {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--rw-rail-item);
+  height: var(--rw-rail-item);
+  border-radius: calc(var(--r) - var(--pad));
+  color: var(--g-ink-dim);
+  font-size: 1rem;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--rw-dur-1) var(--rw-ease),
+    background-color var(--rw-dur-1) var(--rw-ease),
+    transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-rail__item:hover { color: var(--g-ink); background: var(--g-fill); }
+}
+.rw-rail__item:active { transform: scale(calc(var(--rw-press) - .03)); }
+.rw-rail__item.is-current {
+  color: var(--g-ink);
+  background: var(--g-fill-2);
+  box-shadow: inset 0 0 0 1px var(--g-hair);
+}
+.rw-rail__item:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+.rw-rail__glyph { line-height: 1; }
+.rw-rail__label {
+  font: 600 .625rem/1.1 var(--g-font);
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+.rw-rail__div {
+  width: 20px;
+  height: 1px;
+  margin: 4px 0;
+  background: var(--g-hair);
+}
+
+/* With labels, vertical: a wider item, glyph above label. */
+.rw-rail--labels .rw-rail__item {
+  width: auto;
+  min-width: 56px;
+  height: auto;
+  min-height: calc(var(--rw-rail-item) + 12px);
+  padding: 6px 6px 5px;
+  grid-template-rows: auto auto;
+  gap: 3px;
+}
+
+/* ── Horizontal: a tab bar ─────────────────────────────────────────── */
+.rw-rail--horizontal {
+  --r: var(--rw-r-chip);
+  flex-direction: row;
+  width: auto;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+/* Centred while the items fit, start-aligned once they scroll: auto margins
+ * collapse to zero on overflow, where justify-content: center would push the
+ * first items off the unreachable left edge. */
+.rw-rail--horizontal > :first-child { margin-inline-start: auto; }
+.rw-rail--horizontal > :last-child { margin-inline-end: auto; }
+.rw-rail--horizontal::-webkit-scrollbar { display: none; }
+.rw-rail--horizontal .rw-rail__item { border-radius: 999px; flex: 0 0 auto; }
+.rw-rail--horizontal.rw-rail--labels .rw-rail__item { min-width: 64px; border-radius: 999px; }
+.rw-rail--horizontal .rw-rail__div { width: 1px; height: 20px; margin: 0 4px; }
+
+@media (max-width: 47.99rem) {
+  .rw-rail--adaptive {
+    --r: var(--rw-r-chip);
+    flex-direction: row;
+    width: auto;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .rw-rail--adaptive > :first-child { margin-inline-start: auto; }
+  .rw-rail--adaptive > :last-child { margin-inline-end: auto; }
+  .rw-rail--adaptive .rw-rail__item { border-radius: 999px; flex: 0 0 auto; }
+  .rw-rail--adaptive.rw-rail--labels .rw-rail__item { min-width: 64px; }
+  .rw-rail--adaptive .rw-rail__div { width: 1px; height: 20px; margin: 0 4px; }
+
+  /* Docked: a floating tab bar above the home indicator. */
+  .rw-glass.rw-rail--dock,
+  .rw-surface.rw-rail--dock {
+    position: fixed;
+    z-index: 40;
+    left: 50%;
+    bottom: max(.75rem, env(safe-area-inset-bottom, 0px));
+    translate: -50% 0;
+    max-width: calc(100% - 1.5rem);
+  }
+}
+.rw-glass.rw-rail--horizontal.rw-rail--dock,
+.rw-surface.rw-rail--horizontal.rw-rail--dock {
+  position: fixed;
+  z-index: 40;
+  left: 50%;
+  bottom: max(.75rem, env(safe-area-inset-bottom, 0px));
+  translate: -50% 0;
+  max-width: calc(100% - 1.5rem);
+}

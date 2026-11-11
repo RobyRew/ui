@@ -1,24 +1,92 @@
 ---
 /** 07 · Sheet — bottom sheet. Radius on the top corners only; anchored to the
- *  edge rather than floating, which is what distinguishes it from a card. */
-interface Props { title: string; action?: string; class?: string }
-const { title, action, class: cls = '' } = Astro.props;
----
-<section class:list={['rw-sheet', 'rw-glass', cls]} role="dialog" aria-modal="true" aria-label={title}>
-  <span class="rw-sheet__grab" aria-hidden="true"></span>
-  <h2 class="rw-sheet__title">{title}</h2>
-  <div class="rw-sheet__body"><slot /></div>
-  {action && <button type="button" class="rw-sheet__cta">{action}</button>}
-</section>
+ *  edge rather than floating, which is what distinguishes it from a card.
+ *
+ *  Inline by default: a section in the page flow (a specimen, or a panel the
+ *  page shows and hides itself). With `modal` it is a real <dialog>: open it
+ *  with <button commandfor={id} command="show-modal"> or openSheet(id); it
+ *  docks to the bottom edge on phones (drag it down to dismiss) and becomes a
+ *  centred form sheet on wider screens. It closes on Escape, the close button,
+ *  a backdrop click, or the action button — whose dialog returnValue is
+ *  "confirm" (the others give "cancel"); listen for the dialog's `close`
+ *  event to act on it.
+ */
+import './GlassSheet.css';
+import { uid } from '../behaviors/core.js';
 
-<style>
-  .rw-sheet { --r: 26px 26px 0 0; border-radius: 26px 26px 0 0; padding: 12px 16px 18px;
-    display: flex; flex-direction: column; gap: 11px; }
-  .rw-sheet__grab { width: 36px; height: 4px; border-radius: 99px; background: rgb(var(--rim-rgb) / .34); align-self: center; }
-  .rw-sheet__title { margin: 0; font-size: 1.1rem; font-weight: 700; letter-spacing: -.015em; color: var(--g-ink); }
-  .rw-sheet__body { font-size: .82rem; color: var(--g-ink-dim); line-height: 1.5; }
-  .rw-sheet__cta { margin-top: 2px; font: 700 .82rem/1 var(--g-font); color: var(--g-ink); cursor: pointer;
-    padding: 12px; border: 0; border-radius: 14px; background: rgb(var(--rim-rgb) / .2);
-    box-shadow: inset 0 0 0 1px rgb(var(--rim-rgb) / .22); }
-  .rw-sheet__cta:focus-visible { outline: 2px solid var(--g-ink); outline-offset: 2px; }
-</style>
+interface Props {
+  title: string;
+  /** Label of the primary action button. */
+  action?: string;
+  modal?: boolean;
+  /** Required to open a modal sheet by id; generated when omitted. */
+  id?: string;
+  /** Modal only: render open (the script promotes it to a modal on load). */
+  open?: boolean;
+  /** Modal only: false removes Escape, backdrop click, drag and the close button. */
+  dismissible?: boolean;
+  /** Modal only: medium is at least half the viewport, large nearly all of it. */
+  size?: 'auto' | 'medium' | 'large';
+  labels?: { close?: string };
+  theme?: 'light' | 'dark';
+  material?: 'glass' | 'surface';
+  class?: string;
+}
+const {
+  title,
+  action,
+  modal = false,
+  id = uid('rw-sheet'),
+  open = false,
+  dismissible = true,
+  size = 'auto',
+  labels = {},
+  theme,
+  material = 'glass',
+  class: cls = '',
+} = Astro.props;
+const surface = material === 'surface' ? 'rw-surface' : 'rw-glass';
+const titleId = `${id}-title`;
+---
+{modal ? (
+  <dialog
+    id={id}
+    class:list={['rw-sheet', surface, size !== 'auto' && `rw-sheet--${size}`, cls]}
+    aria-labelledby={titleId}
+    open={open || undefined}
+    data-theme={theme}
+    data-rw-sheet
+    data-rw-dismissible={dismissible ? undefined : 'false'}
+  >
+    <div class="rw-sheet__drag" data-rw-sheet-drag={dismissible ? '' : undefined}>
+      <span class="rw-sheet__grab" aria-hidden="true"></span>
+      <div class="rw-sheet__head">
+        <h2 class="rw-sheet__title" id={titleId}>{title}</h2>
+        {dismissible && (
+          <form method="dialog" class="rw-sheet__close-form">
+            <button type="submit" value="cancel" class="rw-sheet__close rw-gl" aria-label={labels.close ?? 'Close'}>✕</button>
+          </form>
+        )}
+      </div>
+    </div>
+    <div class="rw-sheet__body"><slot /></div>
+    {action && (
+      <form method="dialog" class="rw-sheet__foot">
+        <button type="submit" value="confirm" class="rw-sheet__cta">{action}</button>
+      </form>
+    )}
+  </dialog>
+) : (
+  <section class:list={['rw-sheet', surface, cls]} aria-labelledby={titleId} id={Astro.props.id} data-theme={theme}>
+    <span class="rw-sheet__grab" aria-hidden="true"></span>
+    <h2 class="rw-sheet__title" id={titleId}>{title}</h2>
+    <div class="rw-sheet__body"><slot /></div>
+    {action && <button type="button" class="rw-sheet__cta">{action}</button>}
+  </section>
+)}
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initSheets } from '../behaviors/sheet.js';
+  onReady(initSheets);
+</script>

@@ -1,95 +1,308 @@
-/* @robyrew/ui — Obsidian
+/* @robyrew/ui — tokens and the Obsidian material
  *
  * Import once, at the app's root layout:
  *     import '@robyrew/ui/tokens.css';
  *
- * DARK-FIRST ON PURPOSE. Smoked glass only reads over a dark ground, so the bare
- * :root carries the dark palette and light is the variant. The three theme states
- * are all covered: an explicit data-theme wins in either direction, and the
- * unstamped document (which is what most visitors get) falls to prefers-color-scheme.
+ * EVERY CUSTOM PROPERTY LIVES IN THIS FILE. controls.css and the component
+ * sheets only read them, so a re-theme is a set of overrides in this file's
+ * vocabulary and nothing else.
  *
- * Obsidian keeps its own material base in BOTH themes — it does not become white
- * glass when the OS turns light. That is the identity of this direction, not an
- * oversight.
+ * THEMES. Dark is the default: the bare :root carries it. Light applies in two
+ * cases, and the two light blocks below must stay identical
+ * (scripts/check-contrast.mjs fails when they drift):
+ *   1. prefers-color-scheme: light on a document with no data-theme="dark";
+ *   2. data-theme="light" — on <html>, or on ANY element.
+ * data-theme works on any element: a subtree stamped dark inside a light page
+ * (or the reverse) gets the other palette, glass and color-scheme included.
+ * That is also why every value derived from a themed value is declared inside
+ * the theme blocks — a custom property resolves where it is declared, so a
+ * value derived once on :root would not follow a re-themed subtree.
  *
- * NEUTRAL DARK. The dark grounds, ink, hairlines, glass and glass ink are greys
- * with no colour cast, and the accent is the only hue. Up to 0.3.2 all of them
- * were tinted blue (#08090d grounds, blue-grey ink and rim); 0.3.3 dropped the
- * tint at the owner's request, no blue in the dark theme (2026-11-09). The light
- * blocks below do not set the material, so the glass is the same neutral smoke
- * in the light theme too.
+ * ONE FAMILY. Both themes are neutral greys with the accent as the only hue,
+ * built from the same steps: ground < ground-2 < panel in elevation, three ink
+ * levels, one hairline pair, one glass. Up to 0.3.x the light theme put the
+ * dark smoked glass on a blue-grey page; since 0.4.0 the glass follows the
+ * theme too — light frosted glass with dark ink — so a light page carries no
+ * dark slab. The target for text is WCAG AA (4.5:1) on the surfaces it sits
+ * on; scripts/check-contrast.mjs computes every pair from this file and fails
+ * below it.
  */
 
+/* ── Theme-independent ────────────────────────────────────────────
+ * Shape, space, motion and type. Nothing here changes with the theme.
+ */
 :root {
-  /* Page — override these to fit the host site. */
+  --g-font: Manrope, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --g-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --g-glyph: "SF Pro Text", -apple-system, "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", system-ui, sans-serif;
+
+  /* Radii. Controls use Apple's metrics (a grouped card at 16, a control at
+   * 10, a capsule for anything segmented). Glass formats use three steps.
+   * Children nest concentrically: inner radius = outer radius − padding. */
+  --rw-r-card:     16px;
+  --rw-r-ctl:      10px;
+  --rw-r-ctl-sm:   8px;
+  --rw-r-ctl-lg:   12px;
+  --rw-r-chip:     999px;
+  --rw-r-glass-sm: 18px;
+  --rw-r-glass:    22px;
+  --rw-r-glass-lg: 28px;
+
+  /* Space, on a 4px grid. */
+  --rw-sp-1: 4px;
+  --rw-sp-2: 8px;
+  --rw-sp-3: 12px;
+  --rw-sp-4: 16px;
+  --rw-sp-5: 20px;
+  --rw-sp-6: 24px;
+
+  /* Control heights. A fine pointer gets desktop metrics; a coarse one gets
+   * Apple's 44pt touch target (see the pointer query below). */
+  --rw-ctl-h:    2.25rem;
+  --rw-ctl-h-sm: 1.75rem;
+  --rw-ctl-h-lg: 2.75rem;
+  --rw-field-fs: .9375rem;
+
+  /* Focus. One ring everywhere: the accent, 2px, offset 2px. Set --rw-focus to
+   * change its colour; the rules fall back to --accent. */
+  --rw-focus-w: 2px;
+  --rw-focus-o: 2px;
+
+  /* Motion. --rw-ease is Apple's control curve (fast out, long settle).
+   * --rw-ease-spring overshoots by about 4% and settles; it is a linear()
+   * curve where supported and a cubic stand-in elsewhere. --rw-travel scales
+   * every entrance distance, --rw-press is the press scale, --rw-lift the hover
+   * rise; the reduced-motion block below zeroes all three. */
+  --rw-ease:        cubic-bezier(.32, .72, 0, 1);
+  --rw-ease-out:    cubic-bezier(.22, 1, .36, 1);
+  --rw-ease-spring: cubic-bezier(.34, 1.3, .64, 1);
+  --rw-dur-1: 120ms;
+  --rw-dur-2: 200ms;
+  --rw-dur-3: 320ms;
+  --rw-dur-4: 460ms;
+  --rw-dur-move: var(--rw-dur-3);
+  --rw-travel: 1;
+  --rw-press:  .97;
+  --rw-lift:   -2px;
+
+  /* Elevation. Two shadows, never one: a tight contact shadow that anchors the
+   * object plus a wide soft one that lifts it. A single blur reads as a sticker. */
+  --shadow-rgb: 0 0 0;
+  --rw-e1: 0 1px 2px rgb(var(--shadow-rgb) / .10), 0 1px 1px rgb(var(--shadow-rgb) / .06);
+  --rw-e2: 0 4px 12px rgb(var(--shadow-rgb) / .16), 0 1px 2px rgb(var(--shadow-rgb) / .10);
+  --rw-e3: 0 12px 34px rgb(var(--shadow-rgb) / .26), 0 2px 6px rgb(var(--shadow-rgb) / .12);
+
+  /* Material geometry. The colour side of the material is themed below. */
+  --t-blur:    30px;
+  --t-sh-y:    16px;
+  --t-sh-blur: 38px;
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --rw-ease-spring: linear(0, .067 3.8%, .218 7.7%, .398 11.5%, .572 15.4%, .722 19.2%, .839 23.1%,
+      .924 26.9%, .981 30.8%, 1.015 34.6%, 1.033 38.5%, 1.038 42.3%, 1.037 46.2%, 1.031 50%,
+      1.025 53.8%, 1.018 57.7%, 1.012 61.5%, 1.007 65.4%, 1.003 69.2%, 1.001 73.1%, 1);
+  }
+}
+
+/* A coarse pointer means a finger: 44pt targets, and fields at 16px so iOS
+ * Safari does not zoom the page when one is focused. */
+@media (pointer: coarse) {
+  :root {
+    --rw-ctl-h:    2.75rem;
+    --rw-ctl-h-sm: 2.25rem;
+    --rw-ctl-h-lg: 3.125rem;
+    --rw-field-fs: max(1rem, 16px);
+  }
+}
+
+/* Reduced motion keeps fades and colour changes and drops travel: nothing
+ * slides, scales or springs, and moving parts (thumbs, knobs) jump. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rw-ease-spring: var(--rw-ease);
+    --rw-dur-move: 0s;
+    --rw-travel: 0;
+    --rw-press:  1;
+    --rw-lift:   0px;
+  }
+}
+
+/* ── Dark (the default, and any subtree stamped dark) ─────────────── */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  accent-color: var(--accent);
+
+  /* Page */
   --ground:      #090909;
   --ground-2:    #0f0f0f;
-  --ink:         #ededed;
-  --ink-2:       #a3a3a3;
-  --ink-3:       #737373;
+  --panel:       #131313;
   --hair:        #252525;
   --hair-soft:   #1a1a1a;
-  --panel:       #131313;
+  --ink:         #ededed;
+  --ink-2:       #a3a3a3;
+  --ink-3:       #8c8c8c;
   --accent:      #7aa2ff;
   /* A white wash rather than a tint of the accent: a blue fill behind plain
    * buttons and accent badges would bring the cast back. */
   --accent-soft: rgb(255 255 255 / .08);
+  /* Text on an accent fill. The dark accent is light, so its label is dark —
+   * white on #7aa2ff is 2.5:1. */
+  --on-accent:   #0a0a0a;
 
-  /* Material. A different "taste" is only a different set of these eleven. */
-  --glass-rgb:  30 30 30;
-  --rim-rgb:    214 214 214;
-  --shadow-rgb: 0 0 0;
-  --t-alpha:    .52;
-  --t-blur:     30px;
-  --t-sat:      140%;
-  --t-rim:      .30;
-  --t-sh-y:     16px;
-  --t-sh-blur:  38px;
-  --t-sh-a:     .34;
+  /* Status tones, for text and tinted wells. */
+  --rw-ok:     #5cc98d;
+  --rw-warn:   #f0b44c;
+  --rw-danger: #ff5a5f;
 
-  /* Ink ON glass. Separate from page ink: the backdrop behind glass is not the page. */
+  /* Control fills. Translucent rather than flat, so a control keeps its
+   * relationship to whatever surface it lands on. */
+  --rw-fill:     rgb(255 255 255 / .055);
+  --rw-fill-2:   rgb(255 255 255 / .085);
+  --rw-fill-3:   rgb(255 255 255 / .13);
+  --rw-well:     rgb(255 255 255 / .06);
+  --rw-thumb:    rgb(255 255 255 / .15);
+  --rw-thumb-sh: inset 0 1px 0 rgb(255 255 255 / .10), 0 1px 2px rgb(0 0 0 / .30);
+  --rw-knob:     #ffffff;
+  --rw-scrim:    rgb(0 0 0 / .50);
+
+  /* Material — smoked glass. A different "taste" is a different set of these. */
+  --glass-rgb:     30 30 30;
+  --rim-rgb:       214 214 214;
+  /* The hairline ring follows the rim in dark: unset here so .rw-glass falls
+   * back to the rim colour at a third of its strength. */
+  --edge-rgb:      initial;
+  --t-edge:        initial;
+  --t-alpha:       .52;
+  --t-alpha-dense: .80;
+  --t-sat:         140%;
+  --t-rim:         .30;
+  --t-sh-a:        .34;
+
+  /* Ink and fills ON glass. Separate from the page ramp: what shows through
+   * glass is not the page, so page values are the wrong contrast there. */
   --g-ink:      #f5f5f5;
   --g-ink-dim:  #a8a8a8;
-  --g-ink-mute: #7a7a7a;
-
-  --g-font: Manrope, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --g-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --g-glyph: "SF Pro Text", -apple-system, "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", system-ui, sans-serif;
+  --g-ink-mute: #8e8e8e;
+  --g-fill:     rgb(255 255 255 / .08);
+  --g-fill-2:   rgb(255 255 255 / .14);
+  --g-fill-3:   rgb(255 255 255 / .20);
+  --g-hair:     rgb(255 255 255 / .10);
+  --g-track:    rgb(255 255 255 / .16);
+  --g-meter:    rgb(255 255 255 / .86);
 }
 
+/* ── Light ────────────────────────────────────────────────────────
+ * The same values twice: once for the OS preference on an unstamped page, once
+ * for the stamp. Edit both together.
+ */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --ground:      #e8eaf0;
-    --ground-2:    #dfe2ea;
-    --ink:         #14161c;
-    --ink-2:       #4d5464;
-    --ink-3:       #7c8394;
-    --hair:        #ced3de;
-    --hair-soft:   #dfe3ec;
+    color-scheme: light;
+    accent-color: var(--accent);
+
+    --ground:      #f2f2f2;
+    --ground-2:    #f7f7f7;
     --panel:       #ffffff;
-    --accent:      #2b6ef6;
-    --accent-soft: rgb(43 110 246 / .10);
-    --t-sh-a:      .20;
+    --hair:        #e0e0e0;
+    --hair-soft:   #ebebeb;
+    --ink:         #1d1d1f;
+    --ink-2:       #545458;
+    --ink-3:       #6b6b70;
+    --accent:      #2563eb;
+    --accent-soft: rgb(0 0 0 / .05);
+    --on-accent:   #ffffff;
+
+    --rw-ok:     #18794a;
+    --rw-warn:   #9a5a00;
+    --rw-danger: #c8102e;
+
+    --rw-fill:     rgb(0 0 0 / .045);
+    --rw-fill-2:   rgb(0 0 0 / .07);
+    --rw-fill-3:   rgb(0 0 0 / .11);
+    --rw-well:     rgb(0 0 0 / .05);
+    --rw-thumb:    rgb(255 255 255 / .96);
+    --rw-thumb-sh: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .05);
+    --rw-knob:     #ffffff;
+    --rw-scrim:    rgb(0 0 0 / .22);
+
+    --glass-rgb:     252 252 252;
+    --rim-rgb:       255 255 255;
+    --edge-rgb:      0 0 0;
+    --t-edge:        .07;
+    --t-alpha:       .66;
+    --t-alpha-dense: .86;
+    --t-sat:         160%;
+    --t-rim:         .75;
+    --t-sh-a:        .12;
+
+    --g-ink:      #1d1d1f;
+    --g-ink-dim:  #4b4b50;
+    --g-ink-mute: #66666b;
+    --g-fill:     rgb(0 0 0 / .045);
+    --g-fill-2:   rgb(0 0 0 / .075);
+    --g-fill-3:   rgb(0 0 0 / .11);
+    --g-hair:     rgb(0 0 0 / .08);
+    --g-track:    rgb(0 0 0 / .10);
+    --g-meter:    rgb(0 0 0 / .72);
   }
 }
 
-:root[data-theme="light"] {
-  --ground:      #e8eaf0;
-  --ground-2:    #dfe2ea;
-  --ink:         #14161c;
-  --ink-2:       #4d5464;
-  --ink-3:       #7c8394;
-  --hair:        #ced3de;
-  --hair-soft:   #dfe3ec;
+[data-theme="light"] {
+  color-scheme: light;
+  accent-color: var(--accent);
+
+  --ground:      #f2f2f2;
+  --ground-2:    #f7f7f7;
   --panel:       #ffffff;
-  --accent:      #2b6ef6;
-  --accent-soft: rgb(43 110 246 / .10);
-  --t-sh-a:      .20;
+  --hair:        #e0e0e0;
+  --hair-soft:   #ebebeb;
+  --ink:         #1d1d1f;
+  --ink-2:       #545458;
+  --ink-3:       #6b6b70;
+  --accent:      #2563eb;
+  --accent-soft: rgb(0 0 0 / .05);
+  --on-accent:   #ffffff;
+
+  --rw-ok:     #18794a;
+  --rw-warn:   #9a5a00;
+  --rw-danger: #c8102e;
+
+  --rw-fill:     rgb(0 0 0 / .045);
+  --rw-fill-2:   rgb(0 0 0 / .07);
+  --rw-fill-3:   rgb(0 0 0 / .11);
+  --rw-well:     rgb(0 0 0 / .05);
+  --rw-thumb:    rgb(255 255 255 / .96);
+  --rw-thumb-sh: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .05);
+  --rw-knob:     #ffffff;
+  --rw-scrim:    rgb(0 0 0 / .22);
+
+  --glass-rgb:     252 252 252;
+  --rim-rgb:       255 255 255;
+  --edge-rgb:      0 0 0;
+  --t-edge:        .07;
+  --t-alpha:       .66;
+  --t-alpha-dense: .86;
+  --t-sat:         160%;
+  --t-rim:         .75;
+  --t-sh-a:        .12;
+
+  --g-ink:      #1d1d1f;
+  --g-ink-dim:  #4b4b50;
+  --g-ink-mute: #66666b;
+  --g-fill:     rgb(0 0 0 / .045);
+  --g-fill-2:   rgb(0 0 0 / .075);
+  --g-fill-3:   rgb(0 0 0 / .11);
+  --g-hair:     rgb(0 0 0 / .08);
+  --g-track:    rgb(0 0 0 / .10);
+  --g-meter:    rgb(0 0 0 / .72);
 }
 
 /* ── The material ─────────────────────────────────────────────────
- * One class. Every component below is this plus a shape.
- * --r is the component's own radius so nesting stays concentric.
+ * One class. Every glass format is this plus a shape. --r is the format's own
+ * radius so nested corners stay concentric.
  */
 .rw-glass {
   position: relative;
@@ -105,7 +318,7 @@
   backdrop-filter: blur(var(--t-blur)) saturate(var(--t-sat));
   box-shadow:
     inset 0 1px 0 0 rgb(var(--rim-rgb) / var(--t-rim)),
-    inset 0 0 0 1px rgb(var(--rim-rgb) / calc(var(--t-rim) * .34)),
+    inset 0 0 0 1px rgb(var(--edge-rgb, var(--rim-rgb)) / var(--t-edge, calc(var(--t-rim) * .34))),
     0 var(--t-sh-y) var(--t-sh-blur) rgb(var(--shadow-rgb) / var(--t-sh-a));
 }
 
@@ -129,6 +342,51 @@
   mask-composite: exclude;
 }
 
+/* Denser glass for busy backdrops: photographs, video, the opposite theme. */
+.rw-glass--dense { --t-alpha: var(--t-alpha-dense); }
+
+/* Scroll edge, for the sticky shell a glass bar sits in. Content scrolling up
+ * under the bar fades into the ground before it gets there, so the glass
+ * always has mostly ground behind it and its ink keeps its contrast however
+ * bright the content is — the edge effect iOS draws under its bars. Without
+ * it, smoked glass over a white photo turns mid-grey and its ink drops to
+ * about 3:1. The shell has to be positioned; a sticky shell already is. */
+.rw-scroll-edge { isolation: isolate; }
+.rw-scroll-edge::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 -1.5rem;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+    var(--ground) 0%,
+    color-mix(in srgb, var(--ground) 85%, transparent) 55%,
+    transparent 100%);
+}
+
+/* The opaque twin. Same shape and the same ink names, but a solid panel with a
+ * hairline — for when a format is content on the page rather than a layer
+ * floating over it (the house rule: glass for floating layers only). It remaps
+ * the glass ramp onto the page ramp, so a component styled with --g-* tokens
+ * renders correctly on either. */
+.rw-surface {
+  position: relative;
+  border-radius: var(--r, 20px);
+  color: var(--ink);
+  font-family: var(--g-font);
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--hair), var(--rw-e1);
+  --g-ink:      var(--ink);
+  --g-ink-dim:  var(--ink-2);
+  --g-ink-mute: var(--ink-3);
+  --g-fill:     var(--rw-fill);
+  --g-fill-2:   var(--rw-fill-2);
+  --g-fill-3:   var(--rw-fill-3);
+  --g-hair:     var(--hair-soft);
+  --g-track:    var(--rw-fill-3);
+  --g-meter:    var(--ink-2);
+}
+
 /* Glyphs are plain UTF-8 text. Forcing text presentation stops a platform
  * swapping one for a colour emoji — ⏸ and ⚙ are the usual offenders. */
 .rw-gl {
@@ -138,8 +396,22 @@
   line-height: 1;
 }
 
+/* Text for assistive technology only. */
+.rw-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Backdrop helpers. Glass over a flat fill looks like plastic; these give it
- * something to refract. Optional — a real photograph is better. */
+ * something to refract. Optional — a real photograph is better. Aurora and
+ * dusk are dark; daylight is the light-theme counterpart. */
 .rw-bp-aurora {
   background:
     radial-gradient(120% 90% at 12% 8%,  #ff9d6c 0%, transparent 55%),
@@ -153,9 +425,71 @@
     radial-gradient(90% 70% at 78% 8%,  #3d2a6d 0%, transparent 55%),
     linear-gradient(180deg, #1b1c3a, #05060e);
 }
+.rw-bp-daylight {
+  background:
+    radial-gradient(110% 80% at 10% 10%, #ffd3b8 0%, transparent 55%),
+    radial-gradient(100% 80% at 90% 12%, #c9d7ff 0%, transparent 58%),
+    radial-gradient(120% 90% at 50% 100%, #bfeee6 0%, transparent 60%),
+    linear-gradient(160deg, #f6f3ee, #e9edf3);
+}
 
+/* Shared keyframes. Entrance distances multiply --rw-travel, so reduced motion
+ * turns every entrance into a plain fade without a second set of keyframes. */
+@keyframes rw-spin { to { transform: rotate(1turn); } }
+@keyframes rw-fade-in { from { opacity: 0; } }
+@keyframes rw-fade-out { to { opacity: 0; } }
+@keyframes rw-rise {
+  from { opacity: 0; transform: translateY(calc(8px * var(--rw-travel))); }
+}
+@keyframes rw-drop {
+  from { opacity: 0; transform: translateY(calc(-10px * var(--rw-travel))) scale(calc(1 - .03 * var(--rw-travel))); }
+}
+@keyframes rw-pop {
+  from { opacity: 0; transform: scale(calc(1 - .05 * var(--rw-travel))); }
+}
+@keyframes rw-pop-out {
+  to { opacity: 0; transform: scale(calc(1 - .04 * var(--rw-travel))); }
+}
+
+/* ── Accessibility preferences ────────────────────────────────────── */
+
+/* Reduced transparency: the glass becomes an opaque slab of its own colour. */
+@media (prefers-reduced-transparency: reduce) {
+  .rw-glass {
+    background: rgb(var(--glass-rgb) / .96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* More contrast: denser glass and a visible edge on every layer. */
+@media (prefers-contrast: more) {
+  .rw-glass { --t-alpha: var(--t-alpha-dense); }
+  .rw-glass,
+  .rw-surface {
+    outline: 1px solid color-mix(in srgb, var(--g-ink) 40%, transparent);
+    outline-offset: -1px;
+  }
+}
+
+/* Forced colours (Windows contrast themes) drop backgrounds and shadows; a
+ * system-coloured border keeps every layer's edge. */
+@media (forced-colors: active) {
+  .rw-glass,
+  .rw-surface { border: 1px solid CanvasText; }
+  .rw-glass::after { display: none; }
+}
+
+/* Inside glass, reduced motion shortens every transition and animation the
+ * page puts there, not only this package's own. Durations collapse to near
+ * zero rather than to none, so animationend and transitionend still fire. */
 @media (prefers-reduced-motion: reduce) {
-  .rw-glass, .rw-glass * { transition: none !important; animation: none !important; }
+  .rw-glass,
+  .rw-glass * {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 

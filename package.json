@@ -1,6 +1,6 @@
 {
   "name": "@robyrew/ui",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Liquid-glass material (Obsidian) plus an Apple control set, shared across the RobyRew sites",
   "license": "Apache-2.0",
   "type": "module",
@@ -13,10 +13,26 @@
   ],
   "exports": {
     ".": "./src/index.ts",
+    "./package.json": "./package.json",
     "./tokens.css": "./src/tokens.css",
     "./controls.css": "./src/controls.css",
+    "./glass.css": "./src/glass.css",
     "./components/*": "./src/components/*",
-    "./refraction.js": "./src/refraction.js"
+    "./behaviors.js": {
+      "types": "./src/behaviors.d.ts",
+      "default": "./src/behaviors.js"
+    },
+    "./theme.js": {
+      "types": "./src/theme.d.ts",
+      "default": "./src/theme.js"
+    },
+    "./refraction.js": {
+      "types": "./src/refraction.d.ts",
+      "default": "./src/refraction.js"
+    }
+  },
+  "scripts": {
+    "check": "node scripts/check-contrast.mjs"
   },
   "peerDependencies": {
     "astro": ">=5"

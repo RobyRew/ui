@@ -1,0 +1,78 @@
+/* 06 · Inset list — grouped rows, hairlines inset from the edge. Densest text
+ * format.
+ *
+ * Concentric: 22px outer minus 6px padding gives 16px rows. Separators start
+ * at the text, past the icon, as in iOS, and disappear next to a highlighted
+ * row so a hovered row reads as one shape.
+ */
+.rw-list {
+  --r: var(--rw-r-glass);
+  --pad: 6px;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--pad);
+  list-style: none;
+}
+.rw-list > li { position: relative; }
+.rw-list__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 2.75rem;
+  padding: 9px 12px;
+  border-radius: calc(var(--r) - var(--pad));
+  color: var(--g-ink);
+  font-size: .8125rem;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease);
+}
+.rw-list li + li .rw-list__row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 12px;
+  height: 1px;
+  background: var(--g-hair);
+  transition: opacity var(--rw-dur-1) var(--rw-ease);
+}
+.rw-list li + li .rw-list__row:has(.rw-list__icon)::before { inset-inline-start: 47px; }
+@media (hover: hover) {
+  a.rw-list__row:hover { background: var(--g-fill); }
+  .rw-list li:has(> a.rw-list__row:hover) + li .rw-list__row::before,
+  .rw-list li + li > a.rw-list__row:hover::before { opacity: 0; }
+}
+a.rw-list__row:active { background: var(--g-fill-2); }
+.rw-list__row.is-current { background: var(--g-fill-2); }
+.rw-list li:has(> .rw-list__row.is-current) + li .rw-list__row::before,
+.rw-list li + li > .rw-list__row.is-current::before { opacity: 0; }
+a.rw-list__row:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: -2px;
+}
+
+.rw-list__icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 7px;
+  background: var(--g-fill-2);
+  font-size: .75rem;
+}
+.rw-list__text { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.rw-list__label { min-width: 0; overflow-wrap: anywhere; }
+.rw-list__detail { color: var(--g-ink-mute); font-size: .75rem; line-height: 1.3; }
+.rw-list__value {
+  max-width: 45%;
+  margin-inline-start: auto;
+  overflow: hidden;
+  color: var(--g-ink-mute);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rw-list__chev { flex: none; color: var(--g-ink-mute); }
+.rw-list__chev:dir(rtl) { transform: scaleX(-1); }

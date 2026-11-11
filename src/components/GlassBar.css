@@ -1,0 +1,268 @@
+/* 01 · Command bar — the site navbar.
+ *
+ * The bar is a size container: it fills its container's width and folds its
+ * links into a menu below the collapse width its modifier names. .rw-bar--fit
+ * drops the containment, so a bar can shrink-wrap its content (a centred pill)
+ * — and then it never collapses.
+ *
+ * Concentric: the bar is a pill, so everything inside is a pill too.
+ */
+.rw-bar {
+  --r: 999px;
+  --pad: 6px;
+  --rw-bar-h: 2rem;
+  container: rw-bar / inline-size;
+  display: flex;
+  align-items: center;
+  gap: var(--rw-sp-1);
+  padding: var(--pad);
+}
+.rw-bar--fit { container-type: normal; }
+@media (pointer: coarse) {
+  .rw-bar { --rw-bar-h: 2.25rem; }
+}
+
+.rw-bar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: var(--rw-bar-h);
+  height: var(--rw-bar-h);
+  padding-inline: .375rem;
+  flex: none;
+  justify-content: center;
+  border-radius: 999px;
+  color: inherit;
+  font-size: .875rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+.rw-bar__brand:active { transform: scale(var(--rw-press)); }
+/* The default mark, when no brand slot is given. Drawn from the glass ink, so
+ * it is light on smoked glass and dark on frosted. */
+.rw-bar__mark {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: linear-gradient(145deg,
+    color-mix(in srgb, var(--g-ink) 90%, transparent),
+    color-mix(in srgb, var(--g-ink) 35%, transparent));
+}
+
+.rw-bar__links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  margin-inline-end: auto;
+  padding: 0;
+  list-style: none;
+}
+.rw-bar__link {
+  display: flex;
+  align-items: center;
+  height: var(--rw-bar-h);
+  padding-inline: .75rem;
+  border-radius: 999px;
+  color: var(--g-ink-dim);
+  font-size: .8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--rw-dur-1) var(--rw-ease),
+    background-color var(--rw-dur-1) var(--rw-ease),
+    transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-bar__link:hover { color: var(--g-ink); background: var(--g-fill); }
+}
+.rw-bar__link:active { transform: scale(var(--rw-press)); }
+.rw-bar__link.is-current { color: var(--g-ink); background: var(--g-fill-2); }
+
+.rw-bar__end { display: flex; align-items: center; gap: var(--rw-sp-1); flex: none; }
+
+/* A keyboard hint is noise on a device with no keyboard. */
+.rw-bar__hint {
+  padding: 4px 6px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--g-hair);
+  color: var(--g-ink-mute);
+  font: 500 .6875rem/1 var(--g-mono);
+  flex: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .rw-bar__hint { display: none; }
+}
+
+.rw-bar__action {
+  display: inline-flex;
+  align-items: center;
+  height: var(--rw-bar-h);
+  padding-inline: .875rem;
+  flex: none;
+  border-radius: 999px;
+  background: var(--g-fill-2);
+  box-shadow: inset 0 0 0 1px var(--g-hair);
+  color: var(--g-ink);
+  font-size: .8125rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-bar__action:hover { background: var(--g-fill-3); }
+}
+.rw-bar__action:active { transform: scale(var(--rw-press)); }
+.rw-bar__action--primary { background: var(--accent); color: var(--on-accent); box-shadow: none; }
+@media (hover: hover) {
+  .rw-bar__action--primary:hover { background: color-mix(in oklab, var(--accent) 88%, var(--ink)); }
+}
+
+/* ── The collapsed menu ───────────────────────────────────────────── */
+.rw-bar__toggle {
+  display: none;
+  place-items: center;
+  width: var(--rw-bar-h);
+  height: var(--rw-bar-h);
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--g-fill);
+  color: var(--g-ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-bar__toggle:hover { background: var(--g-fill-2); }
+}
+.rw-bar__toggle:active { transform: scale(calc(var(--rw-press) - .03)); }
+/* Two lines that cross into an ✕ while the menu is open. */
+.rw-bar__burger { position: relative; width: 14px; height: 10px; }
+.rw-bar__burger i {
+  position: absolute;
+  inset-inline: 0;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform var(--rw-dur-3) var(--rw-ease-spring), top var(--rw-dur-2) var(--rw-ease);
+}
+.rw-bar__burger i:first-child { top: 2px; }
+.rw-bar__burger i:last-child { top: 6.5px; }
+.rw-bar.is-menu-open .rw-bar__burger i:first-child { top: 4.25px; transform: rotate(45deg); }
+.rw-bar.is-menu-open .rw-bar__burger i:last-child { top: 4.25px; transform: rotate(-45deg); }
+.rw-bar:has(.rw-bar__menu:popover-open) .rw-bar__burger i:first-child { top: 4.25px; transform: rotate(45deg); }
+.rw-bar:has(.rw-bar__menu:popover-open) .rw-bar__burger i:last-child { top: 4.25px; transform: rotate(-45deg); }
+
+/* The menu is a popover: it renders in the top layer, so its glass blurs the
+ * page rather than only the bar. Fixed, and placed by behaviors/bar.js under
+ * the bar; without the script it sits under a bar at the top of the viewport. */
+.rw-glass.rw-bar__menu,
+.rw-surface.rw-bar__menu {
+  --r: var(--rw-r-glass);
+  --pad: 6px;
+  position: fixed;
+  inset: auto;
+  top: var(--rw-menu-top, calc(env(safe-area-inset-top, 0px) + 4.25rem));
+  left: var(--rw-menu-left, max(.75rem, env(safe-area-inset-left, 0px)));
+  right: var(--rw-menu-right, max(.75rem, env(safe-area-inset-right, 0px)));
+  width: var(--rw-menu-width, auto);
+  max-height: calc(100dvh - var(--rw-menu-top, 5rem) - 1rem);
+  margin: 0;
+  padding: var(--pad);
+  border: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  z-index: 60;
+  transform-origin: top right;
+  animation: rw-drop var(--rw-dur-3) var(--rw-ease-spring) both;
+}
+.rw-bar__menu:dir(rtl) { transform-origin: top left; }
+/* Where the Popover API is missing, the script toggles .is-open instead. */
+@supports not selector(:popover-open) {
+  .rw-bar__menu:not(.is-open) { display: none; }
+}
+.rw-bar__menu ul { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.rw-bar__menu li { animation: rw-rise var(--rw-dur-3) var(--rw-ease-out) both; }
+.rw-bar__menu li:nth-child(2) { animation-delay: 20ms; }
+.rw-bar__menu li:nth-child(3) { animation-delay: 40ms; }
+.rw-bar__menu li:nth-child(4) { animation-delay: 60ms; }
+.rw-bar__menu li:nth-child(5) { animation-delay: 80ms; }
+.rw-bar__menu li:nth-child(n+6) { animation-delay: 100ms; }
+.rw-bar__menu a {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-inline: .875rem;
+  border-radius: calc(var(--r) - var(--pad));
+  color: var(--g-ink);
+  font-size: .9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-bar__menu a:hover { background: var(--g-fill); }
+}
+.rw-bar__menu a:active { background: var(--g-fill-2); }
+.rw-bar__menu a[aria-current="page"] { background: var(--g-fill-2); }
+.rw-bar__menu .rw-bar__menu-action {
+  display: none;
+  justify-content: center;
+  margin-top: var(--pad);
+  background: var(--g-fill-2);
+}
+/* The menu slot: controls that live in the end slot on a wider bar. Shown in
+ * the menu only once the end slot is hidden, so nothing appears twice. */
+.rw-bar__menu-extra {
+  display: none;
+  margin-top: var(--pad);
+  padding: var(--pad) calc(var(--pad) + 2px) 2px;
+  box-shadow: inset 0 1px 0 var(--g-hair);
+}
+
+/* ── Collapse widths ──────────────────────────────────────────────── */
+.rw-bar--collapse-always :is(.rw-bar__links, .rw-bar__hint) { display: none; }
+.rw-bar--collapse-always .rw-bar__toggle { display: inline-grid; }
+.rw-bar--collapse-always .rw-bar__brand { margin-inline-end: auto; }
+@container rw-bar (width < 30rem) {
+  .rw-bar--collapse-sm :is(.rw-bar__links, .rw-bar__hint) { display: none; }
+  .rw-bar--collapse-sm .rw-bar__toggle { display: inline-grid; }
+  .rw-bar--collapse-sm .rw-bar__brand { margin-inline-end: auto; }
+}
+@container rw-bar (width < 40rem) {
+  .rw-bar--collapse-md :is(.rw-bar__links, .rw-bar__hint) { display: none; }
+  .rw-bar--collapse-md .rw-bar__toggle { display: inline-grid; }
+  .rw-bar--collapse-md .rw-bar__brand { margin-inline-end: auto; }
+}
+@container rw-bar (width < 52rem) {
+  .rw-bar--collapse-lg :is(.rw-bar__links, .rw-bar__hint) { display: none; }
+  .rw-bar--collapse-lg .rw-bar__toggle { display: inline-grid; }
+  .rw-bar--collapse-lg .rw-bar__brand { margin-inline-end: auto; }
+}
+/* Watch-sized: the bar keeps only the brand and the menu button. The action
+ * moves into the menu, and so does the end slot — as whatever the page put in
+ * the `menu` slot. */
+@container rw-bar (width < 18rem) {
+  .rw-bar[class*="rw-bar--collapse-"] :is(.rw-bar__action, .rw-bar__end) { display: none; }
+  .rw-bar__menu .rw-bar__menu-action { display: flex; }
+  .rw-bar__menu .rw-bar__menu-extra { display: block; }
+}
+
+/* ── Focus ────────────────────────────────────────────────────────── */
+:where(.rw-bar__brand, .rw-bar__link, .rw-bar__action, .rw-bar__toggle, .rw-bar__menu a):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+.rw-bar__menu a:focus-visible { outline-offset: -2px; }
