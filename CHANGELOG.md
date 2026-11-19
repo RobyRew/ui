@@ -88,6 +88,13 @@ build the markup from script.
   the theme is switched twice in quick succession (it reached the console as
   an unhandled `AbortError`).
 
+### Package
+
+- `astro` is an optional peer (`peerDependenciesMeta`). Only the `.astro`
+  components use it; a package that imports `@robyrew/ui/icons`, the
+  stylesheets or the script modules (chat-converter's library, a Vite app)
+  no longer has npm install Astro as a missing peer.
+
 ### Check
 
 - `tokens.css` now declares `--site-max`, `--gutter` and `--site-head` on

@@ -19,6 +19,11 @@ that requires authentication even for public packages, so a fork could not
 `npm install` — which would break the rule that every repo stays independently
 forkable. A plain git tag needs no account and no token.
 
+Astro (`>=5`) is an optional peer. The `.astro` components need it; the
+stylesheets, `@robyrew/ui/icons`, `theme.js`, `behaviors.js` and
+`refraction.js` do not, so a package or a Vite app that takes only those
+installs without Astro (npm 7+ adds a missing peer unless it is optional).
+
 Apps on Tailwind get this package through
 [`@robyrew/web-config`](https://github.com/RobyRew/web-config), which wires the
 tokens into Tailwind and pins a matching tag.
