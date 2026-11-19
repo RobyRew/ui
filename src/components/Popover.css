@@ -1,0 +1,229 @@
+/* Popover and Menu — the opaque overlay (behaviors/popover.js).
+ *
+ * A modal <dialog class="rw-pop">, so it renders in the top layer. Three
+ * shapes, decided here:
+ *   - anchored (.is-anchored, set by the script): hangs from its trigger, at
+ *     --rw-pop-left / --rw-pop-top;
+ *   - panel (no script, or opened without an anchor): centred;
+ *   - sheet (under 40rem, whatever else applies): docked to the bottom edge
+ *     with a grab handle. --rw-pop-sheet tells the script which is in force.
+ * Opaque — the panel, a hairline, the overlay elevation. Never glass: in
+ * WebKit a top-layer dialog with a backdrop-filter let the page's text show
+ * through it unblurred, and a menu is content to act on, not chrome.
+ */
+.rw-pop {
+  --r: 16px;
+  --pad: 6px;
+  --rw-pop-sheet: 0;
+  --rw-pop-w: 20rem;
+  position: fixed;
+  inset: 0;
+  width: min(var(--rw-pop-w), calc(100vw - 2rem));
+  height: fit-content;
+  max-width: calc(100vw - 16px);
+  max-height: min(80dvh, 42rem);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--hair);
+  border-radius: var(--r);
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--g-font);
+  font-size: .875rem;
+  line-height: 1.4;
+  box-shadow: var(--rw-e4);
+}
+.rw-pop:not([open]) { display: none; }
+.rw-pop[open] { animation: rw-pop var(--rw-dur-2) var(--rw-ease-spring) both; }
+.rw-pop.is-closing { animation: rw-pop-out var(--rw-dur-2) var(--rw-ease) both; }
+.rw-pop::backdrop {
+  background: var(--rw-scrim, rgb(0 0 0 / .3));
+  animation: rw-fade-in var(--rw-dur-2) ease both;
+}
+.rw-pop.is-closing::backdrop { animation: rw-fade-out var(--rw-dur-2) ease both; }
+
+.rw-pop[data-width="sm"] { --rw-pop-w: 13rem; }
+.rw-pop[data-width="md"] { --rw-pop-w: 16rem; }
+.rw-pop[data-width="lg"] { --rw-pop-w: 24rem; }
+.rw-pop[data-width="xl"] { --rw-pop-w: 32rem; }
+.rw-pop[data-width="auto"] { width: max-content; }
+
+/* Hanging from its trigger: no scrim, the origin at the trigger's corner. */
+.rw-pop.is-anchored {
+  inset: auto;
+  top: var(--rw-pop-top, 0px);
+  left: var(--rw-pop-left, 0px);
+  margin: 0;
+  transform-origin: top right;
+}
+.rw-pop.is-anchored[data-side="top"] { transform-origin: bottom right; }
+.rw-pop.is-anchored[data-align="start"] { transform-origin: top left; }
+.rw-pop.is-anchored[data-align="start"][data-side="top"] { transform-origin: bottom left; }
+.rw-pop.is-anchored::backdrop { background: transparent; }
+
+.rw-pop__inner {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+  min-height: 0;
+}
+.rw-pop__inner:focus { outline: none; }
+.rw-pop__drag { display: flex; flex-direction: column; flex: none; }
+.rw-pop__grab {
+  display: none;
+  align-self: center;
+  flex: none;
+  width: 38px;
+  height: 5px;
+  margin: .5rem 0 .125rem;
+  border-radius: 999px;
+  background: var(--rw-fill-3);
+}
+.rw-pop__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  padding: .625rem .5rem .25rem 1rem;
+}
+.rw-pop__title { margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }
+.rw-pop__close-form { display: contents; }
+.rw-pop__close { background: transparent; color: var(--ink-2); }
+.rw-pop__body {
+  display: grid;
+  gap: .75rem;
+  min-height: 0;
+  padding: .5rem 1rem 1rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.rw-pop__body:has(> .rw-menu:only-child),
+.rw-pop__body:has(> .rw-quick:only-child) { padding: 0; }
+
+/* ── The sheet (narrow screens) ─────────────────────────────────── */
+@media (width < 40rem) {
+  .rw-pop,
+  .rw-pop.is-anchored {
+    --rw-pop-sheet: 1;
+    --r: 22px;
+    inset: auto 0 0;
+    top: auto;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 2.5rem);
+    margin: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-width: 1px 0 0;
+    border-radius: var(--r) var(--r) 0 0;
+    translate: 0 var(--rw-drag, 0px);
+    transition: translate var(--rw-dur-3) var(--rw-ease-spring);
+  }
+  .rw-pop::backdrop,
+  .rw-pop.is-anchored::backdrop { background: var(--rw-scrim, rgb(0 0 0 / .3)); }
+  .rw-pop.is-dragging { transition: none; }
+  .rw-pop[open] { animation: rw-pop-up var(--rw-dur-4) var(--rw-ease-spring) both; }
+  .rw-pop.is-closing { animation: rw-pop-down var(--rw-dur-3) var(--rw-ease) both; }
+  .rw-pop__grab { display: block; }
+  .rw-pop [data-rw-pop-drag] { touch-action: none; cursor: grab; }
+  .rw-pop.is-dragging [data-rw-pop-drag] { cursor: grabbing; }
+  /* The page behind a sheet does not scroll. */
+  html:has(dialog.rw-pop[open]) { overflow: hidden; }
+}
+/* With --rw-travel at 1 the sheet slides up fully opaque; at 0 (reduced
+ * motion) it stays put and fades. */
+@keyframes rw-pop-up { from { transform: translateY(calc(100% * var(--rw-travel))); opacity: var(--rw-travel); } }
+@keyframes rw-pop-down { to { transform: translateY(calc(100% * var(--rw-travel))); opacity: var(--rw-travel); } }
+
+/* ── Menu ─────────────────────────────────────────────────────────
+ * role="menu" items: buttons or links, each with an icon (or a status dot)
+ * column, a label with an optional second line, and an optional tail.
+ */
+.rw-menu { display: grid; gap: 1px; padding: var(--pad); }
+.rw-menu__heading {
+  margin: 0;
+  padding: .5rem .65rem .2rem;
+  color: var(--ink-3);
+  font-size: .6875rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.rw-menu__sep { height: 1px; margin: .3rem .4rem; background: var(--hair-soft); }
+.rw-menu__item {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: .45rem .65rem;
+  border: 0;
+  border-radius: calc(var(--r) - var(--pad));
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: .875rem;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease);
+}
+@media (pointer: coarse) {
+  .rw-menu__item { min-height: 2.75rem; }
+}
+@media (hover: hover) {
+  .rw-menu__item:hover:not(:disabled, [aria-disabled="true"]) { background: var(--rw-fill); }
+}
+/* fill, not fill-2: a hint in ink-3 keeps 4.5:1 on it in the dark theme. */
+.rw-menu__item:active:not(:disabled, [aria-disabled="true"]) { background: var(--rw-fill-2); }
+.rw-menu__item:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: -2px;
+  background: var(--rw-fill);
+}
+.rw-menu__item:focus:not(:focus-visible) { outline: none; }
+.rw-menu__item:is(:disabled, [aria-disabled="true"]) { opacity: .45; cursor: not-allowed; }
+.rw-menu__item--danger { color: var(--rw-danger); }
+.rw-menu__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.25rem;
+  color: var(--ink-2);
+}
+.rw-menu__item--danger .rw-menu__icon { color: inherit; }
+/* A check for menuitemradio / menuitemcheckbox, shown when checked. */
+.rw-menu__item[aria-checked] .rw-menu__check { visibility: hidden; }
+.rw-menu__item[aria-checked="true"] .rw-menu__check { visibility: visible; color: var(--accent); }
+.rw-menu__label { display: grid; flex: 1; min-width: 0; }
+.rw-menu__label > small {
+  overflow: hidden;
+  color: var(--ink-3);
+  font-size: .75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rw-menu__tail {
+  flex: none;
+  margin-inline-start: auto;
+  color: var(--ink-3);
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+@media (width < 40rem) {
+  .rw-menu { padding: .25rem .5rem .5rem; }
+  .rw-menu__item { min-height: 2.875rem; font-size: .9375rem; }
+}
+
+@media (prefers-contrast: more) {
+  .rw-pop { border-color: color-mix(in srgb, var(--ink) 45%, transparent); }
+}
+@media (forced-colors: active) {
+  .rw-pop { border: 1px solid CanvasText; }
+  .rw-menu__item:focus-visible { outline-color: Highlight; }
+}
+@media print {
+  .rw-pop { display: none !important; }
+}

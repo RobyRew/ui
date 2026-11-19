@@ -35,6 +35,17 @@
   --g-font: Manrope, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --g-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --g-glyph: "SF Pro Text", -apple-system, "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", system-ui, sans-serif;
+  /* Colour emoji (reactions). The opposite of --g-glyph: these SHOULD render
+   * as emoji, so they never sit inside .rw-gl. */
+  --g-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
+
+  /* Page frame. Apps that set their own keep theirs (an app's :root wins).
+   * --site-head is the sticky header's height plus the space above it;
+   * SiteHeader measures it and writes it on <html>, this is the first-paint
+   * estimate. Sticky offsets and scroll-padding read it. */
+  --site-max:  96rem;
+  --gutter:    1rem;
+  --site-head: 4rem;
 
   /* Radii. Controls use Apple's metrics (a grouped card at 16, a control at
    * 10, a capsule for anything segmented). Glass formats use three steps.
@@ -91,11 +102,17 @@
   --rw-e1: 0 1px 2px rgb(var(--shadow-rgb) / .10), 0 1px 1px rgb(var(--shadow-rgb) / .06);
   --rw-e2: 0 4px 12px rgb(var(--shadow-rgb) / .16), 0 1px 2px rgb(var(--shadow-rgb) / .10);
   --rw-e3: 0 12px 34px rgb(var(--shadow-rgb) / .26), 0 2px 6px rgb(var(--shadow-rgb) / .12);
+  /* Overlays: menus, popovers, the sheets they become on a phone. */
+  --rw-e4: 0 24px 60px -12px rgb(var(--shadow-rgb) / .45), 0 2px 6px rgb(var(--shadow-rgb) / .12);
 
   /* Material geometry. The colour side of the material is themed below. */
   --t-blur:    30px;
   --t-sh-y:    16px;
   --t-sh-blur: 38px;
+}
+
+@media (min-width: 40rem) {
+  :root { --gutter: 1.5rem; }
 }
 
 @supports (transition-timing-function: linear(0, 1)) {
@@ -168,6 +185,20 @@
   --rw-knob:     #ffffff;
   --rw-scrim:    rgb(0 0 0 / .50);
 
+  /* Avatar tints, for initials when a person has no picture. The one place a
+   * hue other than the accent appears, and only at low chroma (OKLCH C ≈ .04,
+   * eight hues 45° apart), so a person keeps a recognisable colour without the
+   * page gaining a second accent. Initials are --rw-av-ink on every tint. */
+  --rw-av-0:   #543734;
+  --rw-av-1:   #4e3c27;
+  --rw-av-2:   #3f4228;
+  --rw-av-3:   #2b4738;
+  --rw-av-4:   #22464a;
+  --rw-av-5:   #2f4255;
+  --rw-av-6:   #413b54;
+  --rw-av-7:   #4f3747;
+  --rw-av-ink: #ededed;
+
   /* Material — smoked glass. A different "taste" is a different set of these. */
   --glass-rgb:     30 30 30;
   --rim-rgb:       214 214 214;
@@ -228,6 +259,16 @@
     --rw-knob:     #ffffff;
     --rw-scrim:    rgb(0 0 0 / .22);
 
+    --rw-av-0:   #f2d2cf;
+    --rw-av-1:   #ebd7c2;
+    --rw-av-2:   #d9dec3;
+    --rw-av-3:   #c7e3d3;
+    --rw-av-4:   #c0e2e6;
+    --rw-av-5:   #c9ddf2;
+    --rw-av-6:   #dcd7f1;
+    --rw-av-7:   #ecd2e2;
+    --rw-av-ink: #1d1d1f;
+
     --glass-rgb:     252 252 252;
     --rim-rgb:       255 255 255;
     --edge-rgb:      0 0 0;
@@ -278,6 +319,16 @@
   --rw-thumb-sh: 0 1px 3px rgb(0 0 0 / .13), 0 0 0 .5px rgb(0 0 0 / .05);
   --rw-knob:     #ffffff;
   --rw-scrim:    rgb(0 0 0 / .22);
+
+  --rw-av-0:   #f2d2cf;
+  --rw-av-1:   #ebd7c2;
+  --rw-av-2:   #d9dec3;
+  --rw-av-3:   #c7e3d3;
+  --rw-av-4:   #c0e2e6;
+  --rw-av-5:   #c9ddf2;
+  --rw-av-6:   #dcd7f1;
+  --rw-av-7:   #ecd2e2;
+  --rw-av-ink: #1d1d1f;
 
   --glass-rgb:     252 252 252;
   --rim-rgb:       255 255 255;

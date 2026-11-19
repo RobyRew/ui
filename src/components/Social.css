@@ -1,0 +1,301 @@
+/* Social — ReactionBar and its picker, LikeButton, Comment, Composer
+ * (behaviors/social.js).
+ *
+ * Ported from ChatForge's .cf-reaction / .cf-quick / .cf-composer. One sheet
+ * for the family, so a page that renders only a Composer still has the
+ * Comment styles for the comment its script appends after a post.
+ *
+ * Emoji are colour emoji, set in --g-emoji, and never inside .rw-gl (which
+ * forces text presentation for the glyph icons).
+ */
+
+/* ── Reactions ─────────────────────────────────────────────────── */
+.rw-react { display: block; margin: 0; }
+.rw-reactions { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; }
+.rw-reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  min-height: 1.75rem;
+  padding: .125rem .5rem;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: .8125rem;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--rw-dur-1) var(--rw-ease),
+    border-color var(--rw-dur-1) var(--rw-ease),
+    color var(--rw-dur-1) var(--rw-ease),
+    transform var(--rw-dur-1) var(--rw-ease);
+}
+.rw-reaction__emoji {
+  font-family: var(--g-emoji);
+  font-size: 1rem;
+  line-height: 1;
+  font-variant-emoji: emoji;
+}
+.rw-reaction__count { display: inline-block; font-size: .75rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+@media (hover: hover) {
+  .rw-reaction:hover { background: var(--rw-fill-2); color: var(--ink); }
+}
+.rw-reaction:active { transform: scale(var(--rw-press)); }
+/* Laid over the panel, so the page behind does not lower the accent's contrast. */
+.rw-reaction[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--panel);
+  color: var(--accent);
+}
+.rw-reaction.is-bump .rw-reaction__count { animation: rw-count-bump var(--rw-dur-3) var(--rw-ease-spring); }
+@keyframes rw-count-bump {
+  40% { transform: translateY(calc(-3px * var(--rw-travel))) scale(calc(1 + .18 * var(--rw-travel))); }
+}
+.rw-reaction--add { padding-inline: .4rem; color: var(--ink-3); }
+.rw-react[data-readonly] .rw-reaction { cursor: default; }
+.rw-react[data-readonly] .rw-reaction:active { transform: none; }
+
+/* The picker: a grid of quick reactions in a .rw-pop. */
+.rw-quick {
+  display: grid;
+  grid-template-columns: repeat(6, 2.5rem);
+  gap: 2px;
+  padding: var(--pad, 6px);
+}
+.rw-quick__btn {
+  display: grid;
+  place-items: center;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--r, 16px) - var(--pad, 6px));
+  background: transparent;
+  font-family: var(--g-emoji);
+  font-size: 1.375rem;
+  line-height: 1;
+  font-variant-emoji: emoji;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-quick__btn:hover { background: var(--rw-fill-2); }
+}
+.rw-quick__btn:active { transform: scale(.9); }
+@media (width < 40rem) {
+  .rw-quick { grid-template-columns: repeat(6, 1fr); padding: .25rem .75rem 1rem; }
+  .rw-quick__btn { height: 3rem; font-size: 1.625rem; }
+}
+
+/* ── Like ──────────────────────────────────────────────────────── */
+.rw-like-form { display: inline-flex; margin: 0; }
+.rw-like {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  min-height: var(--rw-ctl-h-sm);
+  padding: .25rem .65rem .25rem .55rem;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: .8125rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--rw-dur-1) var(--rw-ease),
+    border-color var(--rw-dur-1) var(--rw-ease),
+    color var(--rw-dur-1) var(--rw-ease),
+    transform var(--rw-dur-1) var(--rw-ease);
+}
+.rw-like > .rw-icon { width: 1.05rem; height: 1.05rem; transition: fill var(--rw-dur-1) var(--rw-ease); }
+@media (hover: hover) {
+  .rw-like:hover { background: var(--rw-fill-2); color: var(--ink); }
+}
+.rw-like:active { transform: scale(var(--rw-press)); }
+.rw-like[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--panel);
+  color: var(--accent);
+}
+.rw-like[aria-pressed="true"] > .rw-icon { fill: currentColor; }
+.rw-like.is-popping > .rw-icon { animation: rw-like-pop var(--rw-dur-4) var(--rw-ease-spring); }
+@keyframes rw-like-pop { 30% { transform: scale(calc(1 + .35 * var(--rw-travel))); } }
+/* Plain: icon and count only, for a table row or a comment's action row. */
+.rw-like--plain { padding-inline: .45rem; border-color: transparent; background: transparent; }
+.rw-like--plain[aria-pressed="true"] { border-color: transparent; background: transparent; }
+
+/* ── Comment ───────────────────────────────────────────────────── */
+.rw-comments { display: grid; gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
+.rw-comment {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .75rem;
+  scroll-margin-top: calc(var(--site-head) + 1rem);
+}
+.rw-comment__avatar { display: block; align-self: start; border-radius: 50%; }
+.rw-comment__main { display: grid; gap: .3rem; min-width: 0; }
+.rw-comment__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .125rem .5rem;
+  min-width: 0;
+  font-size: .8125rem;
+  line-height: 1.35;
+}
+.rw-comment__author { color: var(--ink); font-weight: 650; text-decoration: none; overflow-wrap: anywhere; }
+a.rw-comment__author:hover { text-decoration: underline; text-underline-offset: 2px; }
+.rw-comment__handle { color: var(--ink-3); }
+.rw-comment__time { color: var(--ink-3); font-size: .75rem; text-decoration: none; }
+a.rw-comment__time:hover { color: var(--ink-2); text-decoration: underline; text-underline-offset: 2px; }
+.rw-comment__edited { color: var(--ink-3); font-size: .75rem; }
+.rw-comment__body {
+  color: var(--ink);
+  font-size: .9375rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.rw-comment__body[data-plain] { white-space: pre-wrap; }
+.rw-comment__body > * { margin: 0; }
+.rw-comment__body > * + * { margin-top: .5em; }
+.rw-comment__body a { color: var(--accent); text-underline-offset: 2px; }
+.rw-comment__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem;
+  margin-top: .125rem;
+  margin-inline-start: -.4rem;
+}
+.rw-comment__action {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  min-height: 1.75rem;
+  padding: .25rem .5rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-3);
+  font: inherit;
+  font-size: .8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), color var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-comment__action:hover { background: var(--rw-fill); color: var(--ink-2); }
+}
+.rw-comment__replies {
+  display: grid;
+  gap: 1rem;
+  margin: .625rem 0 0;
+  padding: 0;
+  padding-inline-start: .875rem;
+  border-inline-start: 2px solid var(--hair-soft);
+  list-style: none;
+}
+.rw-comment--deleted .rw-comment__body { color: var(--ink-3); font-style: italic; }
+/* A permalink target (#c-123) flashes once, without moving anything. */
+.rw-comment:target {
+  margin: -.5rem;
+  padding: .5rem;
+  border-radius: 14px;
+  animation: rw-comment-target 2.4s var(--rw-ease-out) both;
+}
+@keyframes rw-comment-target {
+  from { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  to { background: transparent; }
+}
+
+/* ── Composer ──────────────────────────────────────────────────── */
+.rw-composer {
+  display: grid;
+  gap: .5rem;
+  margin: 0;
+  padding: .625rem .75rem;
+  border: 1px solid var(--hair);
+  border-radius: var(--rw-r-card);
+  background: var(--panel);
+  color: var(--ink);
+  transition: border-color var(--rw-dur-1) var(--rw-ease), box-shadow var(--rw-dur-1) var(--rw-ease);
+}
+.rw-composer:focus-within {
+  border-color: var(--rw-focus, var(--accent));
+  box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--rw-focus, var(--accent)) 22%, transparent);
+}
+.rw-composer__field {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  max-height: 16rem;
+  margin: 0;
+  padding: .25rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  /* 16px on touch, so iOS does not zoom on focus. */
+  font-size: var(--rw-field-fs);
+  line-height: 1.5;
+  resize: none;
+  field-sizing: content;
+  overflow-y: auto;
+  outline: none;
+}
+.rw-composer__field::placeholder { color: var(--ink-3); opacity: 1; }
+.rw-composer__context {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .3rem .3rem .3rem .65rem;
+  border-inline-start: 3px solid var(--accent);
+  border-radius: 6px 10px 10px 6px;
+  background: var(--rw-fill);
+  color: var(--ink-2);
+  font-size: .8125rem;
+}
+.rw-composer__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .5rem; }
+.rw-composer__hint { margin: 0; margin-inline-end: auto; color: var(--ink-3); font-size: .75rem; }
+.rw-composer__count { color: var(--ink-3); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.rw-composer__count:empty,
+.rw-composer__count[data-state="idle"] { display: none; }
+.rw-composer__count[data-state="near"] { color: var(--rw-warn); }
+.rw-composer__count[data-state="over"] { color: var(--rw-danger); }
+.rw-composer:has(.rw-composer__field:disabled) { opacity: .6; }
+
+:where(.rw-reaction, .rw-like, .rw-comment__action, .rw-comment__author, .rw-comment__time):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+.rw-quick__btn:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rw-comment:target { animation-duration: .01ms; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+}
+@media (forced-colors: active) {
+  .rw-reaction,
+  .rw-like { border: 1px solid ButtonText; }
+  .rw-reaction[aria-pressed="true"],
+  .rw-like[aria-pressed="true"] { border-color: Highlight; }
+}
+@media print {
+  .rw-composer,
+  .rw-reaction--add { display: none !important; }
+}

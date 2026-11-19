@@ -1,0 +1,25 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import LoadMore from '@robyrew/ui/components/LoadMore.astro';
+import ReleaseRows from '../../components/ReleaseRows.astro';
+import { releases } from '../../lib/releases';
+const PER = 8;
+const all = releases(30);
+---
+<Kit slug="load-more" title="LoadMore" lead="A link to the next page — /kit/load-more/2/ here — that, with script, fetches it, takes the rows of the same table, appends them, and copies that page's own LoadMore across: its next link and its status. On the last page the link goes away. Without script it is a link.">
+  <section class="pv-section">
+    <div class="rw-table-wrap">
+      <table class="rw-table rw-table--compact rw-table--stack" id="pv-lm-table">
+        <thead>
+          <tr>
+            <th scope="col">Version</th><th scope="col">Platform</th><th scope="col">Released</th><th scope="col">Sources</th><th scope="col" class="is-num">Likes</th><th scope="col" class="is-actions"><span class="rw-sr-only">Download</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <ReleaseRows rows={all.slice(0, PER)} prefix="pv-lm-1" />
+        </tbody>
+      </table>
+    </div>
+    <LoadMore id="pv-lm" href="/kit/load-more/2/" target="#pv-lm-table tbody" status={`${PER} of ${all.length}`} labels={{ loading: 'Loading…' }} />
+  </section>
+</Kit>

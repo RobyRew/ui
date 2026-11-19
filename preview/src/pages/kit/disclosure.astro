@@ -1,0 +1,31 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Disclosure from '@robyrew/ui/components/Disclosure.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="disclosure" title="Disclosure" lead="A titled section on a real <details>: it opens with no script, find-in-page reaches its text, and several with the same name make an accordion (one open at a time). It animates open where the browser can size to auto.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="Disclosure">
+        <h3 class="pv-h">An accordion (name)</h3>
+        <div>
+          <Disclosure title="Why are some official links expired?" name={`faq-${t}`} open icon="clock">
+            <p>Spotify serves only its newest installer publicly; older links are signed and stop working after a while. The archive keeps its own copy.</p>
+          </Disclosure>
+          <Disclosure title="How is a download checked?" name={`faq-${t}`} meta="SHA-256" icon="shield">
+            <p>Every file is hashed when it is captured, and every mirror is compared against that hash.</p>
+          </Disclosure>
+          <Disclosure title="Can I upload a build?" name={`faq-${t}`} icon="upload">
+            <p>No: the archive only records official builds.</p>
+          </Disclosure>
+        </div>
+        <h3 class="pv-h">Plain rows</h3>
+        <div>
+          <Disclosure plain title="Changelog" meta="12 lines"><p>Fixed playback on some Bluetooth devices.</p></Disclosure>
+          <Disclosure plain title="Raw ledger entry"><p class="pv-mono">&#123; "version": "1.2.52.400", "platform": "win32-x86_64" &#125;</p></Disclosure>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

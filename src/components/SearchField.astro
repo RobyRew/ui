@@ -1,0 +1,54 @@
+---
+/** SearchField — a capsule search input with a leading icon, a clear button
+ *  and an optional shortcut key. It submits its form on Enter like any search
+ *  field; listen for `input` to filter as the reader types. ✕ and Escape
+ *  clear it (and fire input); `shortcut` ("/") focuses it from anywhere
+ *  outside a field and shows the key as a hint where there is a keyboard.
+ *  Put role="search" on the form that holds it. */
+import './Filters.css';
+import Icon from './Icon.astro';
+
+interface Props {
+  /** The accessible name; also the placeholder unless `placeholder` is given. */
+  label: string;
+  name?: string;
+  value?: string;
+  placeholder?: string;
+  shortcut?: string;
+  id?: string;
+  form?: string;
+  size?: 'sm' | 'md';
+  autofocus?: boolean;
+  labels?: { clear?: string };
+  class?: string;
+}
+const { label, name = 'q', value, placeholder, shortcut, id, form, size = 'md', autofocus, labels = {}, class: cls } = Astro.props;
+---
+<div class:list={['rw-search', { 'rw-search--sm': size === 'sm' }, cls]}>
+  <Icon name="search" size={size === 'sm' ? 15 : 17} class="rw-search__icon" />
+  <input
+    class="rw-field rw-search__input"
+    type="search"
+    name={name}
+    id={id}
+    form={form}
+    value={value}
+    placeholder={placeholder ?? label}
+    aria-label={label}
+    autocomplete="off"
+    spellcheck="false"
+    enterkeyhint="search"
+    autofocus={autofocus}
+    data-rw-search-key={shortcut}
+  />
+  {shortcut && <kbd class="rw-search__kbd" aria-hidden="true">{shortcut}</kbd>}
+  <button type="button" class="rw-search__clear" data-rw-search-clear aria-label={labels.clear ?? 'Clear search'}>
+    <Icon name="x" size={14} />
+  </button>
+</div>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initFilters } from '../behaviors/filters.js';
+  onReady(initFilters);
+</script>

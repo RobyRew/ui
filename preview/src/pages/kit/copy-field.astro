@@ -1,0 +1,25 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import CopyField from '@robyrew/ui/components/CopyField.astro';
+import { THEMES } from '../../lib/kit';
+const sha = '9f2c6d1e0b7a4c3f8e5d2a1b0c9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3ce41a';
+---
+<Kit slug="copy-field" title="CopyField" lead="A monospace value and a button that copies it. One click on the value selects all of it; the button (it needs script) says Copied for two seconds and a live region announces it. A display value can stand in for a long one while the full value is copied.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="CopyField">
+        <CopyField label="SHA-256" value={sha} />
+        <CopyField label="SHA-256" value={sha} truncate />
+        <CopyField value="winget install Spotify.Spotify --version 1.2.52.400" />
+        <div class="pv-surface">
+          <CopyField label="Link" value="https://spotify-versions-history.robyrew.com/r/1.2.52.400/win-x64" display="…/r/1.2.52.400/win-x64" />
+        </div>
+        <div class="pv-swatch-row">
+          <button class="rw-btn rw-btn--sm" type="button" data-rw-copy data-rw-copy-value="https://example.com/permalink">Copy permalink</button>
+          <span class="rw-hint">Any button with data-rw-copy and a value.</span>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

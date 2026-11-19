@@ -1,0 +1,13 @@
+---
+/** One theme pane on a kit page. data-theme pins everything inside to that
+ *  theme, whatever the page itself is set to. */
+interface Props { theme: 'light' | 'dark'; title?: string }
+const { theme, title } = Astro.props;
+---
+<section class="pv-pane" data-theme={theme} aria-label={`${title ?? 'Specimens'} — ${theme}`}>
+  <header class="pv-pane__head">
+    <h2>{theme === 'dark' ? 'Dark' : 'Light'}</h2>
+    <span class="rw-badge">data-theme="{theme}"</span>
+  </header>
+  <slot />
+</section>

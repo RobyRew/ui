@@ -1,0 +1,27 @@
+---
+/** Callout — a note set apart from the text around it: info (the accent),
+ *  ok, warn or danger, with the tone's icon and an optional title. From
+ *  chat-converter's .callout. role="note" by default; pass role="status" for
+ *  a message that appears in response to something the reader did. */
+import Icon from './Icon.astro';
+import type { IconName } from '../icons.js';
+
+interface Props {
+  tone?: 'info' | 'ok' | 'warn' | 'danger';
+  title?: string;
+  /** Another icon, or false for none. */
+  icon?: IconName | false;
+  role?: 'note' | 'status' | 'alert';
+  class?: string;
+}
+const { tone = 'info', title, icon, role = 'note', class: cls } = Astro.props;
+const ICON: Record<string, IconName> = { info: 'info', ok: 'checkCircle', warn: 'alert', danger: 'xCircle' };
+const glyph = icon === false ? null : icon ?? ICON[tone]!;
+---
+<div class:list={['rw-callout', cls]} data-tone={tone === 'info' ? undefined : tone} role={role}>
+  {glyph && <Icon name={glyph} size={18} class="rw-callout__icon" />}
+  <div class="rw-callout__body">
+    {title && <strong class="rw-callout__title">{title}</strong>}
+    <slot />
+  </div>
+</div>

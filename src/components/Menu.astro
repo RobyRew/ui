@@ -1,0 +1,147 @@
+---
+/** Menu — a list of actions in a Popover (role="menu").
+ *
+ *  Items are buttons, or links when they have an href (a download mirror, a
+ *  profile page). Each can carry an icon or a status dot, a second line
+ *  (`hint`) and a tail (`tail`: a size, a shortcut). `checked` makes an item a
+ *  menuitemradio (or, with role: 'checkbox', a menuitemcheckbox). A heading
+ *  starts a labelled group, so radio sets stay separate.
+ *
+ *  Choosing an item dispatches `rw:select` on the dialog (detail { row, value })
+ *  and closes the menu; preventDefault keeps it open. Arrow keys, Home/End and
+ *  type-ahead move between items.
+ *
+ *  `trigger` renders the button that opens it. Without it, write one:
+ *      <button commandfor="id" command="show-modal" aria-haspopup="menu"
+ *              aria-expanded="false" aria-controls="id">…</button>
+ */
+import './Popover.css';
+import Icon from './Icon.astro';
+import type { IconName } from '../icons.js';
+import type { MenuEntry, MenuItem, Status } from '../index';
+
+interface Props {
+  id: string;
+  /** The menu's accessible name. */
+  label: string;
+  items: MenuEntry[];
+  /** A visible heading with a close button. */
+  title?: string;
+  width?: 'sm' | 'md' | 'lg' | 'xl' | 'auto';
+  align?: 'start' | 'end';
+  trigger?: { label: string; icon?: IconName; iconOnly?: boolean; class?: string };
+  /** Words for the status dots, read by screen readers. */
+  statusLabels?: Partial<Record<Status, string>>;
+  labels?: { close?: string };
+  theme?: 'light' | 'dark';
+  class?: string;
+}
+const { id, label, items, title, width = 'md', align, trigger, statusLabels = {}, labels = {}, theme, class: cls } = Astro.props;
+const STATUS: Record<Status, string> = { ok: 'Available', warn: 'Degraded', danger: 'Down', unknown: 'Unknown' };
+
+// Headings open labelled groups; everything before the first heading is
+// ungrouped.
+type Section = { heading?: string; hid?: string; entries: Array<MenuItem | 'separator'> };
+const sections: Section[] = [{ entries: [] }];
+for (const entry of items) {
+  if (!entry) continue;
+  if (typeof entry === 'object' && 'heading' in entry) {
+    sections.push({ heading: entry.heading, hid: `${id}-g${sections.length}`, entries: [] });
+  } else {
+    sections[sections.length - 1]!.entries.push(entry);
+  }
+}
+const titleId = `${id}-title`;
+---
+{trigger && (
+  <button
+    type="button"
+    class:list={['rw-btn', { 'rw-btn--icon': trigger.iconOnly }, trigger.class]}
+    commandfor={id}
+    command="show-modal"
+    aria-haspopup="menu"
+    aria-expanded="false"
+    aria-controls={id}
+    aria-label={trigger.iconOnly ? trigger.label : undefined}
+  >
+    {trigger.icon && <Icon name={trigger.icon} size={18} />}
+    {!trigger.iconOnly && <span>{trigger.label}</span>}
+  </button>
+)}
+<dialog
+  id={id}
+  class:list={['rw-pop', 'rw-pop--menu', cls]}
+  aria-label={title ? undefined : label}
+  aria-labelledby={title ? titleId : undefined}
+  data-width={width}
+  data-align={align}
+  data-theme={theme}
+>
+  <div class="rw-pop__inner" tabindex="-1" autofocus>
+    <div class="rw-pop__drag" data-rw-pop-drag>
+      <span class="rw-pop__grab" aria-hidden="true"></span>
+      {title && (
+        <div class="rw-pop__head">
+          <h2 class="rw-pop__title" id={titleId}>{title}</h2>
+          <form method="dialog" class="rw-pop__close-form">
+            <button type="submit" value="cancel" class="rw-btn rw-btn--icon rw-btn--sm rw-pop__close" aria-label={labels.close ?? 'Close'}>
+              <Icon name="x" size={16} />
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+    <div class="rw-pop__body">
+      <div class="rw-menu" role="menu" aria-label={label}>
+        {sections.map((s) => {
+          const body = s.entries.map((entry) => {
+            if (entry === 'separator') return <div class="rw-menu__sep" role="separator"></div>;
+            const it = entry;
+            const Tag = it.href && !it.disabled ? 'a' : 'button';
+            const role = it.checked === undefined ? 'menuitem' : it.role === 'checkbox' ? 'menuitemcheckbox' : 'menuitemradio';
+            const checked = it.checked === undefined ? undefined : it.checked ? 'true' : 'false';
+            return (
+              <Tag
+                class:list={['rw-menu__item', { 'rw-menu__item--danger': it.danger }]}
+                role={role}
+                href={Tag === 'a' ? it.href : undefined}
+                type={Tag === 'button' ? 'button' : undefined}
+                aria-checked={checked}
+                aria-disabled={it.disabled ? 'true' : undefined}
+                data-value={it.value}
+                download={Tag === 'a' && it.download ? (it.download === true ? '' : it.download) : undefined}
+                rel={Tag === 'a' && it.external ? 'noopener' : undefined}
+              >
+                <span class="rw-menu__icon" aria-hidden="true">
+                  {it.dot ? <span class="rw-dot" data-status={it.dot}></span>
+                    : it.icon ? <Icon name={it.icon} />
+                    : it.checked !== undefined ? <Icon name="check" class="rw-menu__check" />
+                    : null}
+                </span>
+                <span class="rw-menu__label">
+                  {it.label}
+                  {it.dot && <span class="rw-sr-only">, {statusLabels[it.dot] ?? STATUS[it.dot]}</span>}
+                  {it.hint && <small>{it.hint}</small>}
+                </span>
+                {it.tail && <span class="rw-menu__tail">{it.tail}</span>}
+              </Tag>
+            );
+          });
+          return s.heading ? (
+            <div role="group" aria-labelledby={s.hid}>
+              <p class="rw-menu__heading" id={s.hid} aria-hidden="true">{s.heading}</p>
+              {body}
+            </div>
+          ) : body;
+        })}
+      </div>
+      <slot />
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initPopovers } from '../behaviors/popover.js';
+  onReady(initPopovers);
+</script>

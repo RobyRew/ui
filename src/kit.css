@@ -1,0 +1,22 @@
+/* @robyrew/ui — every app-kit stylesheet in one import, for pages that build
+ * this markup without the Astro components (script-rendered comments, rows a
+ * React island draws, plain HTML):
+ *
+ *     @import '@robyrew/ui/tokens.css';
+ *     @import '@robyrew/ui/controls.css';
+ *     @import '@robyrew/ui/kit.css';
+ *
+ * Under Tailwind, import it into the components layer like the other sheets,
+ * so utilities still win:
+ *     @import '@robyrew/ui/kit.css' layer(components);
+ *
+ * An Astro page that renders the components does not need it: each component
+ * imports its family's sheet. The content primitives (avatar, status dot,
+ * skeleton, empty state, table, page head, disclosure, callout, load more)
+ * live in controls.css and need no sheet of their own.
+ */
+@import './components/SiteHeader.css';
+@import './components/Popover.css';
+@import './components/Filters.css';
+@import './components/Social.css';
+@import './components/Downloads.css';

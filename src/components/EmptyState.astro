@@ -1,0 +1,26 @@
+---
+/** EmptyState — what a list shows when there is nothing in it: an icon, a
+ *  title, a line of text (the default slot) and the action that fills it (the
+ *  `actions` slot). */
+import Icon from './Icon.astro';
+import type { IconName } from '../icons.js';
+
+interface Props {
+  title: string;
+  icon?: IconName;
+  /** The heading level of the title. Default 3. */
+  level?: 2 | 3 | 4;
+  /** A dashed outline, for an empty area inside a page. */
+  bordered?: boolean;
+  compact?: boolean;
+  class?: string;
+}
+const { title, icon, level = 3, bordered = false, compact = false, class: cls } = Astro.props;
+const H = `h${level}` as 'h2' | 'h3' | 'h4';
+---
+<div class:list={['rw-empty', { 'rw-empty--bordered': bordered, 'rw-empty--compact': compact }, cls]}>
+  {icon && <span class="rw-empty__icon" aria-hidden="true"><Icon name={icon} size={compact ? 18 : 22} /></span>}
+  <H class="rw-empty__title">{title}</H>
+  {Astro.slots.has('default') && <div class="rw-empty__text"><slot /></div>}
+  {Astro.slots.has('actions') && <div class="rw-empty__actions rw-actions"><slot name="actions" /></div>}
+</div>

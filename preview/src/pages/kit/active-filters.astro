@@ -1,0 +1,34 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import ActiveFilters from '@robyrew/ui/components/ActiveFilters.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="active-filters" title="ActiveFilters" lead="The filters in force. As links (href) each chip goes to the same page without that filter, which is what a server-rendered list wants; as buttons each one dispatches rw:remove and removes itself, and Clear all dispatches rw:clear.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="ActiveFilters">
+        <h3 class="pv-h">Buttons (script)</h3>
+        <ActiveFilters
+          labels={{ title: 'Filters:' }}
+          filters={[
+            { label: 'Windows', name: 'platform', value: 'win' },
+            { label: 'arm64', name: 'arch', value: 'arm64' },
+            { label: 'Has archive copy', name: 'archived', value: '1' },
+            { label: '“crash on launch”', name: 'q', value: 'crash on launch' },
+          ]}
+        />
+        <h3 class="pv-h">Links (no script)</h3>
+        <ActiveFilters
+          clear="?"
+          filters={[
+            { label: 'macOS', href: '?arch=arm64' },
+            { label: 'arm64', href: '?platform=mac' },
+          ]}
+        />
+        <h3 class="pv-h">One filter: no Clear all</h3>
+        <ActiveFilters filters={[{ label: 'Liked', name: 'liked', value: '1' }]} />
+      </Pane>
+    ))}
+  </div>
+</Kit>

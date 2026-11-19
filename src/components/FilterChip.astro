@@ -1,0 +1,42 @@
+---
+/** FilterChip — a checkbox (or radio) that looks like a chip. The input
+ *  covers the chip, so it keeps its focus, keyboard and form semantics; the
+ *  chip reads :checked with :has(), so a filter form needs no script. Checked
+ *  shows a check mark as well as the tint. */
+import './Filters.css';
+import Icon from './Icon.astro';
+import type { IconName } from '../icons.js';
+import { formatCount } from '../behaviors/format.js';
+
+interface Props {
+  label: string;
+  name: string;
+  value?: string;
+  checked?: boolean;
+  /** radio for one-of-many: give every chip in the set the same name. */
+  type?: 'checkbox' | 'radio';
+  /** A count after the label (matching items). */
+  count?: number;
+  icon?: IconName;
+  form?: string;
+  autosubmit?: boolean;
+  disabled?: boolean;
+  id?: string;
+  locale?: string;
+  class?: string;
+}
+const { label, name, value = 'on', checked, type = 'checkbox', count, icon, form, autosubmit, disabled, id, locale, class: cls } = Astro.props;
+---
+<label class:list={['rw-chip', 'rw-filterchip', cls]}>
+  <input type={type} name={name} value={value} checked={checked} disabled={disabled} form={form} id={id} data-rw-autosubmit={autosubmit ? '' : undefined} />
+  {icon && <Icon name={icon} size={15} class="rw-filterchip__icon" />}
+  <Icon name="check" size={15} class="rw-filterchip__check" />
+  <span>{label}</span>
+  {count != null && <span class="rw-chip__count">{formatCount(count, locale)}</span>}
+</label>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initFilters } from '../behaviors/filters.js';
+  onReady(initFilters);
+</script>

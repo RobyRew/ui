@@ -1,0 +1,57 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import SiteHeader from '@robyrew/ui/components/SiteHeader.astro';
+import Avatar from '@robyrew/ui/components/Avatar.astro';
+import { THEMES } from '../../lib/kit';
+const links = [
+  { label: 'Library', href: '#', current: true },
+  { label: 'Probes', href: '#' },
+  { label: 'API', href: '#' },
+];
+---
+<Kit slug="site-header" title="SiteHeader" lead="The header at the top of this page is the component itself: resize the window under 760px and the links, the theme switch and the Source pill fold into the menu; the avatar stays. It writes its height to --site-head on <html> (shown below), which sticky table heads and scroll-padding read.">
+  <section class="pv-section">
+    <div class="pv-surface">
+      <p class="pv-note">Measured now: <code data-pv-sitehead>—</code></p>
+    </div>
+  </section>
+
+  <section class="pv-section" aria-label="Specimens">
+    <div class="pv-panes">
+      {THEMES.map((t) => (
+        <Pane theme={t} title="SiteHeader">
+          <h3 class="pv-h">Name and mark, links, sign-in</h3>
+          <div class:list={['pv-stage', t === 'dark' ? 'rw-bp-aurora' : 'rw-bp-daylight']}>
+            <SiteHeader class="pv-static" measure={false} scrollEdge={false} name="Versions" sub="Spotify" mark="archive" links={links}>
+              <a slot="account" class="rw-site-action rw-site-action--primary" href="#">Sign in</a>
+            </SiteHeader>
+          </div>
+          <h3 class="pv-h">Signed in, an action pill, no theme switch</h3>
+          <div class:list={['pv-stage', t === 'dark' ? 'rw-bp-dusk' : 'rw-bp-daylight']}>
+            <SiteHeader class="pv-static" measure={false} scrollEdge={false} name="Chat Converter" mark="swap" themeSwitch={false} links={links.slice(0, 2)} actions={[{ label: 'Source', href: '#', icon: 'code' }]}>
+              <button slot="account" class="rw-site-avatar" type="button" aria-label="Account"><Avatar name="Ada Lovelace" size="sm" /></button>
+            </SiteHeader>
+          </div>
+        </Pane>
+      ))}
+    </div>
+  </section>
+
+  <section class="pv-section">
+    <h2>On a phone</h2>
+    <p>A 390px frame: the bar keeps the brand, the account and the menu button; the menu holds the links, the actions and a labelled theme switch. Escape, a click outside, following a link, or tabbing out of the header closes it.</p>
+    <figure class="pv-frame">
+      <iframe src="/kit/frame-header/" title="SiteHeader at phone width" loading="lazy"></iframe>
+      <figcaption>390 × 640, a live page</figcaption>
+    </figure>
+  </section>
+</Kit>
+
+<script>
+  const out = document.querySelector('[data-pv-sitehead]');
+  const show = () => { if (out) out.textContent = getComputedStyle(document.documentElement).getPropertyValue('--site-head').trim() || '(unset)'; };
+  new MutationObserver(show).observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+  addEventListener('load', show);
+  show();
+</script>

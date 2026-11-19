@@ -1,0 +1,91 @@
+---
+/** Comment — one comment: avatar, name or @handle, a relative <time> that
+ *  links to the comment itself, the body, an actions row and replies.
+ *
+ *  The time is rendered against the server's clock and refreshed against
+ *  the reader's (initRelativeTimes), with the full local date as its title.
+ *  `text` is a plain-text body (line breaks kept, nothing parsed as HTML);
+ *  the default slot takes rich content instead. Slots: `actions` (a
+ *  LikeButton, a ReactionBar, .rw-comment__action buttons), `replies` (more
+ *  Comments with as="li", inside an <ol>).
+ *
+ *  Put a list of them in <ol class="rw-comments"> with as="li".
+ */
+import './Social.css';
+import Avatar from './Avatar.astro';
+import { formatRelative } from '../behaviors/time.js';
+
+interface Props {
+  handle: string;
+  name?: string;
+  avatar?: string | null;
+  profileHref?: string;
+  datetime: string | number | Date;
+  /** The element id, for permalinks (#c-123). */
+  id?: string;
+  /** Where the time links. Default #id. */
+  permalink?: string;
+  edited?: boolean;
+  /** A badge after the name ("Author", "Moderator"). */
+  badge?: string;
+  deleted?: boolean;
+  text?: string;
+  as?: 'article' | 'li' | 'div';
+  locale?: string;
+  labels?: { edited?: string; deleted?: string };
+  class?: string;
+}
+const {
+  handle,
+  name,
+  avatar,
+  profileHref,
+  datetime,
+  id,
+  permalink,
+  edited = false,
+  badge,
+  deleted = false,
+  text,
+  as = 'article',
+  locale,
+  labels = {},
+  class: cls,
+} = Astro.props;
+const when = new Date(datetime);
+const iso = Number.isFinite(when.getTime()) ? when.toISOString() : undefined;
+const relative = iso ? formatRelative(iso, { locale }) : '';
+// The server does not know the reader's zone, so its title says UTC; the
+// script replaces it with local time.
+const utc = iso ? `${when.toLocaleString(locale ?? 'en', { dateStyle: 'long', timeStyle: 'short', timeZone: 'UTC' })} UTC` : undefined;
+const at = handle.startsWith('@') ? handle : `@${handle}`;
+const href = permalink ?? (id ? `#${id}` : undefined);
+const Tag = as;
+const Author = profileHref ? 'a' : 'span';
+const plain = !deleted && text != null;
+---
+<Tag class:list={['rw-comment', { 'rw-comment--deleted': deleted }, cls]} id={id}>
+  {profileHref
+    ? <a class="rw-comment__avatar" href={profileHref} tabindex="-1" aria-hidden="true"><Avatar name={name || handle} src={avatar} /></a>
+    : <span class="rw-comment__avatar"><Avatar name={name || handle} src={avatar} /></span>}
+  <div class="rw-comment__main">
+    <div class="rw-comment__head">
+      <Author class="rw-comment__author" href={profileHref}>{name || at}</Author>
+      {name && <span class="rw-comment__handle">{at}</span>}
+      {badge && <span class="rw-badge rw-badge--accent">{badge}</span>}
+      {href
+        ? <a class="rw-comment__time" href={href}><time datetime={iso} title={utc} data-rw-relative>{relative}</time></a>
+        : <time class="rw-comment__time" datetime={iso} title={utc} data-rw-relative>{relative}</time>}
+      {edited && <span class="rw-comment__edited">· {labels.edited ?? 'edited'}</span>}
+    </div>
+    <div class="rw-comment__body" data-plain={plain ? '' : undefined}>{deleted ? (labels.deleted ?? 'This comment was deleted.') : plain ? text : <slot />}</div>
+    {!deleted && Astro.slots.has('actions') && <div class="rw-comment__actions"><slot name="actions" /></div>}
+    {Astro.slots.has('replies') && <ol class="rw-comment__replies"><slot name="replies" /></ol>}
+  </div>
+</Tag>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initRelativeTimes } from '../behaviors/time.js';
+  onReady(initRelativeTimes);
+</script>

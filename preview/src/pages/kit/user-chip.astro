@@ -1,0 +1,25 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import UserChip from '@robyrew/ui/components/UserChip.astro';
+import { THEMES } from '../../lib/kit';
+import { artSea } from '../../lib/art';
+---
+<Kit slug="user-chip" title="UserChip" lead="A person as an avatar and an @handle, linked to their profile. The app decides what someone without a handle is called (RobyRew ID shows user-<first six of the id>).">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="UserChip">
+        <div class="pv-swatch-row">
+          <UserChip handle="robyrew" href="#" />
+          <UserChip handle="gcalin_dtag" href="#" src={artSea} />
+          <UserChip handle="user-32z5gu" />
+          <UserChip handle="saerun" name="Sae Run" showName href="#" size="md" />
+          <UserChip handle="bmontsen" size="xs" href="#" />
+        </div>
+        <div class="pv-surface">
+          <p class="pv-note">Uploaded by <UserChip handle="robyrew" href="#" size="xs" /> · 2 days ago</p>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

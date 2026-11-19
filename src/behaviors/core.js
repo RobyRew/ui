@@ -44,6 +44,13 @@ let seq = 0;
 /** A document-unique id with a readable prefix. */
 export const uid = (prefix = 'rw') => `${prefix}-${(++seq).toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
+/** Puts .js on <html>. themeBootstrap already does, before the first paint;
+ *  this covers a page without it. CSS that hides a script-only control (a copy
+ *  button, a menu toggle) until script can drive it keys off this class. */
+export function markJs() {
+  if (hasDOM()) document.documentElement.classList.add('js');
+}
+
 /** iOS Safari applies :active only when a touch listener exists somewhere on
  *  the page. One passive no-op listener turns the press states on. */
 let pressReady = false;
@@ -136,6 +143,8 @@ export function enableCommands() {
   commandsReady = true;
   if ('command' in HTMLButtonElement.prototype) return;
   document.addEventListener('click', (e) => {
+    // A behaviour that opens its own target (popover.js) cancels the click.
+    if (e.defaultPrevented) return;
     const btn = e.target instanceof Element ? e.target.closest('button[commandfor]') : null;
     if (!btn || btn.disabled) return;
     const target = document.getElementById(btn.getAttribute('commandfor') || '');

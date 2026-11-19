@@ -1,0 +1,31 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Icon from '@robyrew/ui/components/Icon.astro';
+import { ICON_PATHS, PLATFORM_MARKS, type IconName } from '@robyrew/ui/icons';
+import { THEMES } from '../../lib/kit';
+const names = (Object.keys(ICON_PATHS) as IconName[]).filter((n) => !(PLATFORM_MARKS as readonly string[]).includes(n));
+---
+<Kit slug="icons" title="Icons" lead="@robyrew/ui/icons: stroke icons on a 24 grid at 1.8, in currentColor — the set chat-converter started, plus what the kit needs — and five monochrome platform marks. <Icon name> in Astro, iconSvg() for a template string, icon() for an element." log={false}>
+  <section class="pv-section">
+    <h2>Platform marks</h2>
+    <div class="pv-panes">
+      {THEMES.map((t) => (
+        <Pane theme={t} title="Platform marks">
+          <div class="pv-icons">
+            {PLATFORM_MARKS.map((n) => <figure><Icon name={n} size={32} /><figcaption>{n}</figcaption></figure>)}
+          </div>
+          <div class="pv-swatch-row">
+            {PLATFORM_MARKS.map((n) => <span class="rw-badge"><Icon name={n} size={13} />{n}</span>)}
+          </div>
+        </Pane>
+      ))}
+    </div>
+  </section>
+  <section class="pv-section">
+    <h2>The set ({names.length})</h2>
+    <div class="pv-icons">
+      {names.map((n) => <figure><Icon name={n} size={24} /><figcaption>{n}</figcaption></figure>)}
+    </div>
+  </section>
+</Kit>

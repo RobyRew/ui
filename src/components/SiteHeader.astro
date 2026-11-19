@@ -1,0 +1,180 @@
+---
+/** SiteHeader — the house site header, ported from chat-converter.
+ *
+ *  A sticky shell holding an 18px glass bar: the brand, the links, an icon
+ *  theme switch (system / light / dark), action pills, and an `account` slot.
+ *  Under 760px the links, the switch and the pills fold into a glass menu
+ *  under the bar; the account slot stays in the bar. The header measures
+ *  itself and writes --site-head on <html> for sticky offsets and
+ *  scroll-padding.
+ *
+ *  Slots: `brand` (replaces the mark and name), `actions` (extra bar content,
+ *  hidden under 760px), `menu` (extra menu content: the phone counterpart of
+ *  `actions`), `account` (always in the bar: a sign-in pill, or an avatar
+ *  button that opens a Menu).
+ *
+ *  Not GlassBar: a different, denser bar (an 18px corner, not a pill), and a
+ *  menu panel that sits in the page under the bar rather than a popover.
+ */
+import './SiteHeader.css';
+import Icon from './Icon.astro';
+import { uid } from '../behaviors/core.js';
+import type { IconName } from '../icons.js';
+import type { SiteLink } from '../index';
+
+interface Props {
+  links?: SiteLink[];
+  /** Pills in the bar on a wide screen ("Source", "Docs"); in the menu under 760px. */
+  actions?: Array<SiteLink & { primary?: boolean }>;
+  /** The brand name, and an icon for the mark beside it. The `brand` slot replaces both. */
+  name?: string;
+  /** A second, quieter word after the name. */
+  sub?: string;
+  mark?: IconName;
+  brandHref?: string;
+  /** The system / light / dark switch. Default true. */
+  themeSwitch?: boolean;
+  /** Write --site-head on <html>. Default true; turn it off for a second header. */
+  measure?: boolean;
+  /** Fade the page into the ground just under the bar (.rw-scroll-edge), so
+   *  the glass keeps its ink's contrast over bright content. Default true. */
+  scrollEdge?: boolean;
+  /** Text the header generates, for pages that are not in English. */
+  labels?: {
+    nav?: string;
+    home?: string;
+    menu?: string;
+    theme?: string;
+    system?: string;
+    auto?: string;
+    light?: string;
+    dark?: string;
+  };
+  theme?: 'light' | 'dark';
+  class?: string;
+}
+const {
+  links = [],
+  actions = [],
+  name,
+  sub,
+  mark,
+  brandHref = '/',
+  themeSwitch = true,
+  measure = true,
+  scrollEdge = true,
+  labels = {},
+  theme,
+  class: cls,
+} = Astro.props;
+
+const menuId = uid('rw-site-menu');
+const themes = [
+  { id: 'system', label: labels.system ?? 'Match the system', short: labels.auto ?? 'Auto', icon: 'monitor' },
+  { id: 'light', label: labels.light ?? 'Light', short: labels.light ?? 'Light', icon: 'sun' },
+  { id: 'dark', label: labels.dark ?? 'Dark', short: labels.dark ?? 'Dark', icon: 'moon' },
+] as const;
+const hasBrand = Astro.slots.has('brand');
+const hasAccount = Astro.slots.has('account');
+const hasExtra = Astro.slots.has('actions') || actions.length > 0;
+const hasMenu = Astro.slots.has('menu');
+const foldable = links.length > 0 || hasExtra || themeSwitch || hasMenu;
+const home = labels.home ?? (name ? `${name}, home` : 'Home');
+---
+<header class:list={['rw-site-head', { 'rw-scroll-edge': scrollEdge }, cls]} data-rw-site-head data-rw-measure={measure ? '' : undefined} data-theme={theme}>
+  <nav class="rw-site-bar rw-glass" aria-label={labels.nav ?? 'Primary'}>
+    <a class="rw-site-brand" href={brandHref} aria-label={home}>
+      {hasBrand ? <slot name="brand" /> : (
+        <>
+          <span class="rw-site-brand__mark" aria-hidden="true">{mark && <Icon name={mark} size={17} />}</span>
+          {name && <span class="rw-site-brand__name">{name}{sub && <small>{sub}</small>}</span>}
+        </>
+      )}
+    </a>
+
+    {links.length > 0 && (
+      <ul class="rw-site-links">
+        {links.map((l) => (
+          <li>
+            <a class="rw-site-link" href={l.href} aria-current={l.current ? 'page' : undefined}>
+              {l.icon && <Icon name={l.icon} size={16} />}{l.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <div class="rw-site-actions">
+      {themeSwitch && (
+        <div class="rw-seg rw-seg--icon rw-site-theme" role="radiogroup" aria-label={labels.theme ?? 'Theme'} data-rw-seg="select">
+          <span class="rw-seg__thumb" aria-hidden="true"></span>
+          {themes.map((t) => (
+            <button type="button" class="rw-seg__item" role="radio" aria-checked={t.id === 'system' ? 'true' : 'false'} data-rw-theme-set={t.id} aria-label={t.label} title={t.label}>
+              <Icon name={t.icon} size={16} />
+            </button>
+          ))}
+        </div>
+      )}
+      {hasExtra && (
+        <div class="rw-site-extra">
+          {actions.map((a) => (
+            <a class:list={['rw-site-action', { 'rw-site-action--primary': a.primary }]} href={a.href} aria-current={a.current ? 'page' : undefined}>
+              {a.icon && <Icon name={a.icon} size={16} />}<span>{a.label}</span>
+            </a>
+          ))}
+          <slot name="actions" />
+        </div>
+      )}
+      {hasAccount && <div class="rw-site-account"><slot name="account" /></div>}
+      {foldable && (
+        <button class="rw-site-menu-btn" type="button" aria-expanded="false" aria-controls={menuId} aria-label={labels.menu ?? 'Menu'}>
+          <Icon name="menu" size={20} class="rw-site-menu-btn__open" />
+          <Icon name="x" size={20} class="rw-site-menu-btn__close" />
+        </button>
+      )}
+    </div>
+  </nav>
+
+  {foldable && (
+    <div id={menuId} class="rw-site-menu rw-glass" hidden data-rw-site-menu>
+      {(links.length > 0 || actions.length > 0) && (
+        <ul>
+          {links.map((l) => (
+            <li>
+              <a class="rw-site-menu__link" href={l.href} aria-current={l.current ? 'page' : undefined}>
+                {l.icon && <Icon name={l.icon} size={19} />}{l.label}
+              </a>
+            </li>
+          ))}
+          {actions.map((a) => (
+            <li>
+              <a class="rw-site-menu__link" href={a.href} aria-current={a.current ? 'page' : undefined}>
+                {a.icon && <Icon name={a.icon} size={19} />}{a.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+      {hasMenu && <div class="rw-site-menu__extra"><slot name="menu" /></div>}
+      {themeSwitch && (
+        <div class="rw-site-menu__theme">
+          <span id={`${menuId}-theme`}>{labels.theme ?? 'Theme'}</span>
+          <div class="rw-seg" role="radiogroup" aria-labelledby={`${menuId}-theme`} data-rw-seg="select">
+            <span class="rw-seg__thumb" aria-hidden="true"></span>
+            {themes.map((t) => (
+              <button type="button" class="rw-seg__item" role="radio" aria-checked={t.id === 'system' ? 'true' : 'false'} data-rw-theme-set={t.id} aria-label={t.label}>
+                <Icon name={t.icon} size={16} /><span aria-hidden="true">{t.short}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+</header>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initSiteHeads } from '../behaviors/sitehead.js';
+  onReady(initSiteHeads);
+</script>

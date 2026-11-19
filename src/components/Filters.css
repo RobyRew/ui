@@ -1,0 +1,256 @@
+/* Filters — ChipSelect, FilterChip, SearchField, ActiveFilters, and the row
+ * that holds them (.rw-filters). Opaque content-layer controls, ported from
+ * chat-converter's inbox toolbar. Every one is a real form control (a select,
+ * a checkbox or radio, a search input, links or buttons), so a filter form
+ * posts with no script; behaviors/filters.js adds the clear button, the
+ * shortcut key, chip removal and autosubmit.
+ */
+
+/* A row of filters. It scrolls sideways rather than wrapping (--wrap wraps);
+ * the inner padding keeps focus rings clear of the scroll clip. */
+.rw-filters {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: -4px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rw-filters::-webkit-scrollbar { display: none; }
+.rw-filters > * { flex: none; }
+.rw-filters--wrap { flex-wrap: wrap; overflow: visible; }
+.rw-toolbar { display: grid; gap: .6rem; }
+
+/* ── ChipSelect: a native <select> inside a chip ──────────────────
+ * The select fills the chip, so a tap anywhere on it opens the native picker;
+ * the icon and the chevron are drawn over it and let clicks through. A value
+ * other than the first option (the "any" choice) tints the chip, with no
+ * script: :has(option:first-child:not(:checked)). data-neutral turns that off.
+ */
+.rw-chipselect {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  min-height: 1.875rem;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink-2);
+  transition: background-color var(--rw-dur-1) var(--rw-ease), border-color var(--rw-dur-1) var(--rw-ease);
+}
+.rw-chipselect > select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: inherit;
+  max-width: 14rem;
+  margin: 0;
+  padding: 0 1.65rem 0 .75rem;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: .8125rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  outline: none;
+}
+.rw-chipselect:has(> .rw-chipselect__icon) > select { padding-inline-start: 1.9rem; }
+/* Windows paints options with the select's own background: a transparent one
+ * would leave light text on a white list. */
+.rw-chipselect option { background-color: var(--panel); color: var(--ink); }
+.rw-chipselect__icon,
+.rw-chipselect__chev {
+  position: absolute;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+.rw-chipselect__icon { inset-inline-start: .6rem; }
+.rw-chipselect__chev { inset-inline-end: .5rem; }
+@media (hover: hover) {
+  .rw-chipselect:hover { background: var(--rw-fill-2); }
+}
+/* The soft accent is laid over the panel rather than over whatever is
+ * behind the chip: on the light ground it would drop the accent to 4.1:1. */
+.rw-chipselect:not([data-neutral]):has(option:first-child:not(:checked)) {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--panel);
+}
+.rw-chipselect:not([data-neutral]):has(option:first-child:not(:checked)) > :is(select, .rw-icon) { color: var(--accent); }
+.rw-chipselect:has(> select:disabled) { opacity: .45; }
+.rw-chipselect:has(> select:focus-visible) {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+/* 16px on touch, so iOS does not zoom the page when the picker opens. */
+@media (pointer: coarse) {
+  .rw-chipselect { min-height: 2.25rem; }
+  .rw-chipselect > select { font-size: var(--rw-field-fs); }
+}
+
+/* ── FilterChip: a checkbox or radio inside a .rw-chip ────────────
+ * Checked, it takes the same soft accent as a set ChipSelect plus a check
+ * mark, so the state is not carried by colour alone.
+ */
+.rw-chip.rw-filterchip {
+  min-height: 1.875rem;
+  padding: 0 .75rem;
+  background: var(--panel);
+  color: var(--ink-2);
+  font-size: .8125rem;
+  font-weight: 600;
+}
+@media (hover: hover) {
+  .rw-chip.rw-filterchip:hover { background: var(--rw-fill-2); color: var(--ink); }
+}
+.rw-filterchip > .rw-filterchip__check { display: none; }
+.rw-chip.rw-filterchip:has(> input:checked) {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--panel);
+  color: var(--accent);
+}
+.rw-filterchip:has(> input:checked) > .rw-filterchip__check { display: inline-block; }
+.rw-filterchip:has(> input:checked) > .rw-filterchip__icon { display: none; }
+@media (pointer: coarse) {
+  .rw-chip.rw-filterchip { min-height: 2.25rem; }
+}
+
+/* ── SearchField ─────────────────────────────────────────────────── */
+.rw-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.rw-search__icon {
+  position: absolute;
+  inset-inline-start: .8rem;
+  display: grid;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+/* The field's fill is laid over the panel: a search usually sits on the page
+ * ground, where the translucent fill alone left the placeholder at 4.3:1. */
+.rw-search > .rw-search__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding-inline: 2.35rem 2.5rem;
+  border-radius: 999px;
+  background: linear-gradient(var(--rw-fill), var(--rw-fill)), var(--panel);
+}
+/* Hover darkens the edge, not the fill: fill-2 would take the dark theme's
+ * placeholder below 4.5:1. */
+@media (hover: hover) {
+  .rw-search > .rw-search__input:hover:not(:disabled, :focus) {
+    background: linear-gradient(var(--rw-fill), var(--rw-fill)), var(--panel);
+    border-color: color-mix(in oklab, var(--hair) 50%, var(--ink-3));
+  }
+}
+.rw-search--sm > .rw-search__input { min-height: 2rem; padding-inline: 2.1rem 2.25rem; }
+.rw-search--sm .rw-search__icon { inset-inline-start: .7rem; }
+/* The browser's own clear button is replaced by ours, which matches both
+ * themes and fires input like typing does. */
+.rw-search__input::-webkit-search-cancel-button,
+.rw-search__input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+.rw-search__clear {
+  position: absolute;
+  inset-inline-end: .375rem;
+  display: none;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--rw-fill-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.js .rw-search:not(:has(> .rw-search__input:placeholder-shown)) > .rw-search__clear { display: grid; }
+@media (hover: hover) {
+  .rw-search__clear:hover { background: var(--rw-fill-3); color: var(--ink); }
+}
+.rw-search__kbd {
+  position: absolute;
+  inset-inline-end: .75rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--hair);
+  color: var(--ink-3);
+  font: 500 .6875rem/1.2 var(--g-mono);
+  pointer-events: none;
+}
+.rw-search:has(> .rw-search__input:not(:placeholder-shown)) > .rw-search__kbd,
+.rw-search:has(> .rw-search__input:focus) > .rw-search__kbd,
+:root:not(.js) .rw-search__kbd { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .rw-search__kbd { display: none; }
+}
+
+/* ── ActiveFilters: the filters in force, each removable ────────── */
+.rw-active { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; }
+.rw-active[hidden] { display: none; }
+.rw-active__label { margin-inline-end: .125rem; color: var(--ink-3); font-size: .75rem; font-weight: 600; }
+.rw-active__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  min-height: 1.75rem;
+  padding: .125rem .25rem .125rem .65rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--rw-fill-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: .8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease);
+}
+.rw-active__x {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--rw-fill-2);
+  color: var(--ink-2);
+}
+@media (hover: hover) {
+  .rw-active__chip:hover { background: var(--rw-fill-3); }
+  .rw-active__chip:hover .rw-active__x { color: var(--ink); }
+}
+.rw-active__clear {
+  padding: .25rem .5rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: .8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .rw-active__clear:hover { text-decoration: underline; text-underline-offset: 2px; }
+}
+
+:where(.rw-search__clear, .rw-active__chip, .rw-active__clear):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+@media (prefers-contrast: more) {
+  .rw-chipselect { border-color: color-mix(in srgb, var(--ink) 45%, transparent); }
+}
+@media (forced-colors: active) {
+  .rw-chipselect,
+  .rw-active__chip { border: 1px solid ButtonText; }
+}

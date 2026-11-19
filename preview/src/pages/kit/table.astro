@@ -1,0 +1,58 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Icon from '@robyrew/ui/components/Icon.astro';
+import ReleaseRows from '../../components/ReleaseRows.astro';
+import { THEMES } from '../../lib/kit';
+import { releases } from '../../lib/releases';
+const rows = releases(6);
+---
+<Kit slug="table" title="rw-table" lead="A data table on a real <table>, inside an opaque wrap that scrolls sideways when the table is wider than the screen. A filled head, hairline rows, a tint under the pointer, sortable heads (aria-sort), second lines in <small>, end-aligned figures. --stack turns each row into a card under 40rem of wrap width (cells show their data-label); --sticky keeps the head under the site header.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="rw-table">
+        <h3 class="pv-h">Stacked under 40rem (these panes are narrow enough)</h3>
+        <div class="rw-table-wrap">
+          <table class="rw-table rw-table--stack">
+            <caption class="rw-sr-only">Spotify releases</caption>
+            <thead>
+              <tr>
+                <th scope="col" aria-sort="descending"><a class="rw-table__sort" href="#">Version<Icon name="chevronDown" size={14} /></a></th>
+                <th scope="col">Platform</th>
+                <th scope="col"><a class="rw-table__sort" href="#">Released<Icon name="chevronDown" size={14} /></a></th>
+                <th scope="col">Sources</th>
+                <th scope="col" class="is-num">Likes</th>
+                <th scope="col" class="is-actions"><span class="rw-sr-only">Download</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <ReleaseRows rows={rows.slice(0, 3)} prefix={`pv-t-${t}`} />
+            </tbody>
+          </table>
+        </div>
+      </Pane>
+    ))}
+  </div>
+
+  <section class="pv-section">
+    <h2>Full width, compact, sticky head</h2>
+    <p>The head sticks under the site header (top: var(--site-head)); a sticky head needs .rw-table-wrap--open, a wrap that does not scroll.</p>
+    <div class="rw-table-wrap rw-table-wrap--open">
+      <table class="rw-table rw-table--compact rw-table--sticky">
+        <thead>
+          <tr>
+            <th scope="col" aria-sort="ascending"><button class="rw-table__sort" type="button">Version<Icon name="chevronDown" size={14} /></button></th>
+            <th scope="col">Platform</th>
+            <th scope="col">Released</th>
+            <th scope="col">Sources</th>
+            <th scope="col" class="is-num">Likes</th>
+            <th scope="col" class="is-actions"><span class="rw-sr-only">Download</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <ReleaseRows rows={releases(14)} prefix="pv-tw" />
+        </tbody>
+      </table>
+    </div>
+  </section>
+</Kit>

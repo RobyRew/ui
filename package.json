@@ -1,7 +1,7 @@
 {
   "name": "@robyrew/ui",
-  "version": "0.4.0",
-  "description": "Liquid-glass material (Obsidian) plus an Apple control set, shared across the RobyRew sites",
+  "version": "0.5.0-rc.1",
+  "description": "Liquid-glass material (Obsidian), an Apple control set and an app kit, shared across the RobyRew sites",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
@@ -17,6 +17,7 @@
     "./tokens.css": "./src/tokens.css",
     "./controls.css": "./src/controls.css",
     "./glass.css": "./src/glass.css",
+    "./kit.css": "./src/kit.css",
     "./components/*": "./src/components/*",
     "./behaviors.js": {
       "types": "./src/behaviors.d.ts",
@@ -29,6 +30,10 @@
     "./refraction.js": {
       "types": "./src/refraction.d.ts",
       "default": "./src/refraction.js"
+    },
+    "./icons": {
+      "types": "./src/icons.d.ts",
+      "default": "./src/icons.js"
     }
   },
   "scripts": {

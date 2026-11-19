@@ -1,0 +1,74 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Composer from '@robyrew/ui/components/Composer.astro';
+import Icon from '@robyrew/ui/components/Icon.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="composer" title="Composer" lead="The box a comment is written in, from ChatForge: it grows with its text, ⌘↵ or Ctrl+↵ posts, the button stays disabled while the text is blank, and a counter appears near the limit. Here the page takes over the submit and appends the comment, as the archive app will.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="Composer">
+        <ol class="rw-comments" data-pv-thread={t}></ol>
+        <Composer id={`pv-compose-${t}`} label="Write a comment" placeholder="Write a comment…" hint="⌘↵ to post" maxlength={280} />
+        <h3 class="pv-h">Replying, with a tool</h3>
+        <Composer id={`pv-reply-${t}`} label="Reply" placeholder="Reply to @robyrew…" submit="Reply" enter="send" hint="Enter to send, Shift+Enter for a new line">
+          <Fragment slot="context">
+            <Icon name="reply" size={15} /><span>Replying to <b>@robyrew</b></span>
+          </Fragment>
+          <label slot="tools" class="rw-hint"><input type="checkbox" /> Notify me</label>
+        </Composer>
+        <h3 class="pv-h">Signed out</h3>
+        <Composer id={`pv-off-${t}`} label="Write a comment" placeholder="Sign in to comment" disabled />
+      </Pane>
+    ))}
+  </div>
+</Kit>
+
+<script>
+  import { initials, avatarHue, formatRelative } from '@robyrew/ui/behaviors.js';
+  // The page takes over the submit and appends the comment itself — the same
+  // markup Comment.astro renders, built from script (Social.css styles it).
+  document.addEventListener('submit', (e) => {
+    const form = e.target as HTMLFormElement;
+    if (!form.classList.contains('rw-composer')) return;
+    e.preventDefault();
+    const field = form.querySelector('textarea') as HTMLTextAreaElement;
+    const text = field.value.trim();
+    if (!text) return;
+    const thread = form.closest('[data-theme]')?.querySelector('[data-pv-thread]');
+    if (thread) {
+      const li = document.createElement('li');
+      li.className = 'rw-comment';
+      const av = document.createElement('span');
+      av.className = 'rw-comment__avatar';
+      const a = document.createElement('span');
+      a.className = 'rw-avatar';
+      a.dataset.hue = String(avatarHue('you'));
+      a.setAttribute('aria-hidden', 'true');
+      a.textContent = initials('you');
+      av.append(a);
+      const main = document.createElement('div');
+      main.className = 'rw-comment__main';
+      const head = document.createElement('div');
+      head.className = 'rw-comment__head';
+      const who = document.createElement('span');
+      who.className = 'rw-comment__author';
+      who.textContent = '@you';
+      const time = document.createElement('time');
+      time.className = 'rw-comment__time';
+      time.dateTime = new Date().toISOString();
+      time.dataset.rwRelative = '';
+      time.textContent = formatRelative(new Date());
+      head.append(who, time);
+      const body = document.createElement('div');
+      body.className = 'rw-comment__body';
+      body.dataset.plain = '';
+      body.textContent = text;
+      main.append(head, body);
+      li.append(av, main);
+      thread.append(li);
+    }
+    form.reset();
+  });
+</script>

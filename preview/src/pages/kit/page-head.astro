@@ -1,0 +1,21 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import PageHead from '@robyrew/ui/components/PageHead.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="page-head" title="PageHead" lead="The top of a content page, from chat-converter: an eyebrow in the accent, the title, a lead, and a row for what follows. The head of this page is one.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="PageHead">
+        <PageHead level={2} eyebrow="Library" icon="archive" title="Every official Spotify build" lead="Installers for Windows, macOS, Linux and Android, with their checksums, mirrors and what people said about them.">
+          <a class="rw-chip" href="#">Windows</a>
+          <a class="rw-chip" href="#">macOS</a>
+          <a class="rw-chip" href="#">Linux</a>
+          <a class="rw-chip" href="#">Android</a>
+        </PageHead>
+        <PageHead level={2} title="A title alone" />
+      </Pane>
+    ))}
+  </div>
+</Kit>

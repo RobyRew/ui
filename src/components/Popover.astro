@@ -1,0 +1,69 @@
+---
+/** Popover — an opaque panel for content that a button opens: a form, a
+ *  filter group, details. On a wide screen it hangs from that button; under
+ *  40rem it comes up as a bottom sheet (drag the handle down to dismiss).
+ *  For a list of actions use Menu, which is this plus a menu's keyboard model.
+ *
+ *  Open it with a trigger the page writes itself:
+ *      <button commandfor="id" command="show-modal" aria-haspopup="dialog"
+ *              aria-expanded="false" aria-controls="id">Filters</button>
+ *  or from script: openPopover('id', { anchor }). A field marked
+ *  data-autofocus takes focus when it opens.
+ */
+import './Popover.css';
+import Icon from './Icon.astro';
+
+interface Props {
+  id: string;
+  /** The accessible name. Without `title` it is the only one. */
+  label: string;
+  /** A visible heading, with a close button beside it. */
+  title?: string;
+  /** Width when anchored: sm 13rem, md 16rem, lg 24rem, xl 32rem, auto (its content). Default 20rem. */
+  width?: 'sm' | 'md' | 'lg' | 'xl' | 'auto';
+  /** Which edge lines up with the trigger. Default end. */
+  align?: 'start' | 'end';
+  /** false: no Escape, no click outside, no drag, no close button. */
+  dismissible?: boolean;
+  labels?: { close?: string };
+  theme?: 'light' | 'dark';
+  class?: string;
+}
+const { id, label, title, width, align, dismissible = true, labels = {}, theme, class: cls } = Astro.props;
+const titleId = `${id}-title`;
+---
+<dialog
+  id={id}
+  class:list={['rw-pop', cls]}
+  aria-label={title ? undefined : label}
+  aria-labelledby={title ? titleId : undefined}
+  data-width={width}
+  data-align={align}
+  data-theme={theme}
+  data-rw-dismissible={dismissible ? undefined : 'false'}
+>
+  <div class="rw-pop__inner" tabindex="-1" autofocus>
+    <div class="rw-pop__drag" data-rw-pop-drag={dismissible ? '' : undefined}>
+      <span class="rw-pop__grab" aria-hidden="true"></span>
+      {title && (
+        <div class="rw-pop__head">
+          <h2 class="rw-pop__title" id={titleId}>{title}</h2>
+          {dismissible && (
+            <form method="dialog" class="rw-pop__close-form">
+              <button type="submit" value="cancel" class="rw-btn rw-btn--icon rw-btn--sm rw-pop__close" aria-label={labels.close ?? 'Close'}>
+                <Icon name="x" size={16} />
+              </button>
+            </form>
+          )}
+        </div>
+      )}
+    </div>
+    <div class="rw-pop__body"><slot /></div>
+  </div>
+</dialog>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initPopovers } from '../behaviors/popover.js';
+  onReady(initPopovers);
+</script>

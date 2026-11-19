@@ -1,0 +1,45 @@
+---
+/** A phone-width page for the SiteHeader and overlay frames. Not listed. */
+import Preview from '../../layouts/Preview.astro';
+import SiteHeader from '@robyrew/ui/components/SiteHeader.astro';
+import Avatar from '@robyrew/ui/components/Avatar.astro';
+import Menu from '@robyrew/ui/components/Menu.astro';
+import SplitButton from '@robyrew/ui/components/SplitButton.astro';
+import ReactionBar from '@robyrew/ui/components/ReactionBar.astro';
+import PageHead from '@robyrew/ui/components/PageHead.astro';
+---
+<Preview title="Frame — SiteHeader">
+  <SiteHeader
+    name="Versions"
+    sub="Spotify"
+    mark="archive"
+    links={[
+      { label: 'Library', href: '#', current: true, icon: 'list' },
+      { label: 'Probes', href: '#', icon: 'activity' },
+      { label: 'API', href: '#', icon: 'braces' },
+    ]}
+    actions={[{ label: 'Source on GitHub', href: '#', icon: 'code' }]}
+  >
+    <Fragment slot="account">
+      <button class="rw-site-avatar" type="button" commandfor="fr-account" command="show-modal" aria-haspopup="menu" aria-expanded="false" aria-controls="fr-account" aria-label="Account">
+        <Avatar name="robyrew" size="sm" />
+      </button>
+      <Menu id="fr-account" label="Account" title="@robyrew" items={[
+        { label: 'Profile', href: '#', icon: 'userCircle' },
+        { label: 'Liked builds', href: '#', icon: 'heart', tail: '12' },
+        'separator',
+        { label: 'Sign out', icon: 'logOut', danger: true },
+      ]} />
+    </Fragment>
+  </SiteHeader>
+  <main class="pv-wrap">
+    <PageHead eyebrow="Release" title="Spotify 1.2.52" lead="Open the menu in the bar, the avatar's menu (a bottom sheet here), the download mirrors, or the reaction picker." />
+    <SplitButton label="Download" href="#" icon="download" menuTitle="Download from" items={[
+      { label: 'Spotify CDN', href: '#', status: 'ok', hint: 'Official · 98.4 MB' },
+      { label: 'RobyRew archive', href: '#', status: 'ok', hint: 'R2 copy · 98.4 MB' },
+      { label: 'LoadSpot (amd64fox)', href: '#', status: 'warn', hint: 'Slow today' },
+    ]} />
+    <ReactionBar id="fr-react" reactions={[{ emoji: '👍', count: 4, mine: true }, { emoji: '🎉', count: 2 }]} />
+    {Array.from({ length: 8 }, (_, i) => <p class="pv-note">Filler paragraph {i + 1}, so the page scrolls under the sticky header.</p>)}
+  </main>
+</Preview>

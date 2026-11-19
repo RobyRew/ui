@@ -1,0 +1,38 @@
+---
+/** Pages 2 and on of the LoadMore demo: the same table and the same LoadMore
+ *  (same id), as a real paginated list would render them. */
+import Kit from '../../../layouts/Kit.astro';
+import LoadMore from '@robyrew/ui/components/LoadMore.astro';
+import ReleaseRows from '../../../components/ReleaseRows.astro';
+import { releases } from '../../../lib/releases';
+
+const PER = 8;
+const all = releases(30);
+const pages = Math.ceil(all.length / PER);
+
+export function getStaticPaths() {
+  return [2, 3, 4].map((page) => ({ params: { page: String(page) } }));
+}
+
+const page = Number(Astro.params.page);
+const rows = all.slice((page - 1) * PER, page * PER);
+const shown = Math.min(page * PER, all.length);
+const next = page < pages ? `/kit/load-more/${page + 1}/` : null;
+---
+<Kit slug="load-more" title={`LoadMore — page ${page}`} lead="The page LoadMore fetches. Opened directly, it is an ordinary page.">
+  <section class="pv-section">
+    <div class="rw-table-wrap">
+      <table class="rw-table rw-table--compact rw-table--stack" id="pv-lm-table">
+        <thead>
+          <tr>
+            <th scope="col">Version</th><th scope="col">Platform</th><th scope="col">Released</th><th scope="col">Sources</th><th scope="col" class="is-num">Likes</th><th scope="col" class="is-actions"><span class="rw-sr-only">Download</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <ReleaseRows rows={rows} prefix={`pv-lm-${page}`} />
+        </tbody>
+      </table>
+    </div>
+    <LoadMore id="pv-lm" href={next} target="#pv-lm-table tbody" status={next ? `${shown} of ${all.length}` : `All ${all.length} shown`} />
+  </section>
+</Kit>

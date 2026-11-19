@@ -1,0 +1,23 @@
+---
+/** StatusDot — ok / warn / danger / unknown, with its word beside it (or, with
+ *  `hideLabel`, as the dot's accessible name and tooltip). `pulse` marks a
+ *  live check. The classes are content primitives in controls.css. */
+import type { Status } from '../index';
+
+interface Props {
+  status: Status;
+  /** The word shown (default Available / Degraded / Down / Unknown). */
+  label?: string;
+  hideLabel?: boolean;
+  pulse?: boolean;
+  /** Default words for each status, for pages that are not in English. */
+  labels?: Partial<Record<Status, string>>;
+  class?: string;
+}
+const { status, label, hideLabel = false, pulse = false, labels = {}, class: cls } = Astro.props;
+const WORD: Record<Status, string> = { ok: 'Available', warn: 'Degraded', danger: 'Down', unknown: 'Unknown' };
+const text = label ?? labels[status] ?? WORD[status];
+---
+{hideLabel
+  ? <span class:list={['rw-dot', cls]} data-status={status} data-pulse={pulse ? '' : undefined} role="img" aria-label={text} title={text}></span>
+  : <span class:list={['rw-status', cls]}><span class="rw-dot" data-status={status} data-pulse={pulse ? '' : undefined} aria-hidden="true"></span><span>{text}</span></span>}

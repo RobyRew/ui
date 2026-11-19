@@ -1,0 +1,32 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import ChipSelect from '@robyrew/ui/components/ChipSelect.astro';
+import { THEMES } from '../../lib/kit';
+const platforms: [string, string][] = [['', 'All platforms'], ['win', 'Windows'], ['mac', 'macOS'], ['linux', 'Linux'], ['android', 'Android'], ['ios', 'iOS']];
+const arch: [string, string][] = [['', 'Any architecture'], ['x64', 'x64'], ['arm64', 'arm64'], ['x86', 'x86']];
+const sort: [string, string][] = [['new', 'Newest first'], ['old', 'Oldest first'], ['liked', 'Most liked']];
+---
+<Kit slug="chip-select" title="ChipSelect" lead="A native select inside a chip, from chat-converter's inbox toolbar: a tap anywhere on the chip opens the platform's own picker, so it works with a keyboard, a screen reader and no script. A choice other than the first option tints the chip; a sort order passes neutral and never does.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="ChipSelect">
+        <h3 class="pv-h">On the page</h3>
+        <div class="rw-filters">
+          <ChipSelect label="Platform" name="platform" icon="monitor" options={platforms} />
+          <ChipSelect label="Architecture" name="arch" icon="cpu" options={arch} value="arm64" />
+          <ChipSelect label="Sort" name="sort" icon="sort" options={sort} neutral />
+          <ChipSelect label="Channel" name="channel" options={[['', 'Any channel'], ['stable', 'Stable'], ['beta', 'Beta']]} disabled />
+        </div>
+        <h3 class="pv-h">In a card</h3>
+        <div class="pv-surface">
+          <form class="rw-filters rw-filters--wrap" method="get" action="#" data-rw-autosubmit>
+            <ChipSelect label="Platform" name="platform" icon="monitor" options={platforms} value="mac" />
+            <ChipSelect label="Year" name="year" icon="calendar" options={[['', 'Any year'], ['2026', '2026'], ['2025', '2025'], ['2024', '2024']]} />
+          </form>
+          <p class="pv-note">This form has data-rw-autosubmit: a change would submit it (here, to #).</p>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

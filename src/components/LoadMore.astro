@@ -1,0 +1,43 @@
+---
+/** LoadMore — a link to the next page that, with script, fetches it and
+ *  appends its items to the list in place (behaviors/loadmore.js), plus a
+ *  polite status line ("50 of 312"). The next page renders the same list and
+ *  its own LoadMore; the script copies that one's link and status across, and
+ *  removes the link on the last page. `auto` loads as the link scrolls into
+ *  view. Without script the link is a link. */
+interface Props {
+  /** The next page. Nothing renders but the status when there is none. */
+  href?: string | null;
+  /** A selector for the list to append to, present on both pages ("#releases tbody"). */
+  target: string;
+  /** Which children of the fetched list to take. Default all of them. */
+  items?: string;
+  status?: string;
+  auto?: boolean;
+  label?: string;
+  /** Give it an id when a page has more than one. */
+  id?: string;
+  labels?: { loading?: string; error?: string };
+  class?: string;
+}
+const { href, target, items, status = '', auto = false, label = 'Load more', id, labels = {}, class: cls } = Astro.props;
+---
+<div
+  class:list={['rw-load-more', cls]}
+  id={id}
+  data-rw-load-more
+  data-target={target}
+  data-items={items}
+  data-auto={auto ? '' : undefined}
+  data-loading={labels.loading}
+  data-error={labels.error}
+>
+  {href && <a class="rw-btn rw-load-more__btn" href={href} rel="next" data-rw-next>{label}</a>}
+  <p class="rw-load-more__status" aria-live="polite">{status}</p>
+</div>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initLoadMore } from '../behaviors/loadmore.js';
+  onReady(initLoadMore);
+</script>

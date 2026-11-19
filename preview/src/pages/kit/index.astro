@@ -1,0 +1,26 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import { KIT } from '../../lib/kit';
+---
+<Kit title="The app kit" lead="Components for app pages: a header, menus, filters, people, reactions and comments, downloads, and the states a list goes through. Each page renders its component in both themes; the archive demo puts them together." log={false}>
+  <div slot="meta" class="rw-actions">
+    <a class="rw-btn rw-btn--primary" href="/kit/archive/">Archive demo</a>
+    <a class="rw-btn" href="/">Glass gallery</a>
+  </div>
+  <div class="pv-index">
+    {KIT.map((g) => (
+      <section>
+        <h2>{g.title}</h2>
+        <div class="rw-card">
+          <div class="rw-card__rows">
+            {g.pages.map((p) => (
+              <a class="rw-card__row" href={`/kit/${p.slug}/`}>
+                <b>{p.name}</b><span>{p.blurb}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    ))}
+  </div>
+</Kit>

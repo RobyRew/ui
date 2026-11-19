@@ -103,7 +103,11 @@ export function setTheme(pref, { animate = true } = {}) {
   const calm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const doc = /** @type {Document & { startViewTransition?: (cb: () => void) => unknown }} */ (document);
   if (animate && !calm && typeof doc.startViewTransition === 'function' && document.visibilityState === 'visible') {
-    doc.startViewTransition(run);
+    // A second switch before the first transition ends skips the first one,
+    // which rejects its promises; the theme itself still applies, so the
+    // rejection is expected and caught here instead of reaching the console.
+    const t = /** @type {{ ready?: Promise<void>, finished?: Promise<void>, updateCallbackDone?: Promise<void> }} */ (doc.startViewTransition(run));
+    for (const p of [t?.ready, t?.finished, t?.updateCallbackDone]) p?.catch(() => {});
   } else run();
 }
 

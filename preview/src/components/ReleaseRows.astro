@@ -1,0 +1,43 @@
+---
+/** Table rows for the table, LoadMore and archive demos. */
+import Icon from '@robyrew/ui/components/Icon.astro';
+import StatusDot from '@robyrew/ui/components/StatusDot.astro';
+import LikeButton from '@robyrew/ui/components/LikeButton.astro';
+import SplitButton from '@robyrew/ui/components/SplitButton.astro';
+import type { SampleRelease } from '../lib/releases';
+
+interface Props { rows: SampleRelease[]; prefix: string; actions?: boolean }
+const { rows, prefix, actions = true } = Astro.props;
+---
+{rows.map((r, i) => (
+  <tr>
+    <th scope="row" data-label="Version"><a href="#">{r.version}</a><small class="pv-mono">{r.build}</small></th>
+    <td data-label="Platform"><span class="pv-plat"><Icon name={r.platform} size={16} />{r.platformName}</span><small>{r.arch} · {r.format}</small></td>
+    <td data-label="Released"><time datetime={r.date}>{r.date}</time><small>{r.size}</small></td>
+    <td data-label="Sources">
+      <span class="pv-dots">
+        <StatusDot status={r.official} hideLabel label={`Spotify CDN: ${r.official}`} />
+        <StatusDot status={r.archive} hideLabel label={`Archive: ${r.archive}`} />
+      </span>
+    </td>
+    <td class="is-num" data-label="Likes"><LikeButton count={r.likes} plain /></td>
+    {actions && (
+      <td class="is-actions" data-label="">
+        <SplitButton
+          id={`${prefix}-${i}`}
+          size="sm"
+          label="Download"
+          icon="download"
+          href={r.official === 'danger' ? undefined : '#'}
+          mainLabel={`Download Spotify ${r.build} for ${r.platformName} ${r.arch}`}
+          menuTitle={`Spotify ${r.build}`}
+          items={[
+            { label: 'Spotify CDN', href: r.official === 'danger' ? undefined : '#', status: r.official, hint: r.official === 'danger' ? 'Link expired' : 'Official', tail: r.size },
+            { label: 'RobyRew archive', href: '#', status: r.archive, hint: 'R2 copy', tail: r.size },
+            { label: 'LoadSpot (amd64fox)', href: '#', status: 'unknown', hint: 'Third-party mirror', external: true },
+          ]}
+        />
+      </td>
+    )}
+  </tr>
+))}

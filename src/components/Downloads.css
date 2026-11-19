@@ -1,0 +1,75 @@
+/* Downloads — SplitButton (a primary action plus a menu of mirrors) and
+ * CopyField (a monospace value with a copy button). StatusDot is a content
+ * primitive in controls.css; the mirror menu is a Menu (Popover.css).
+ */
+
+/* ── SplitButton ───────────────────────────────────────────────────
+ * Two .rw-btn joined: the action and the menu toggle. The seam is a hairline
+ * of the label's own colour, so it holds on the accent and on a plain fill.
+ */
+.rw-split { display: inline-flex; align-items: stretch; vertical-align: middle; isolation: isolate; }
+.rw-split > .rw-split__main {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+.rw-split > .rw-split__more {
+  min-width: 0;
+  width: calc(var(--rw-ctl-h) - .25rem);
+  padding: 0;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  box-shadow: inset 1px 0 0 color-mix(in srgb, currentColor 24%, transparent);
+}
+.rw-split > .rw-split__more:dir(rtl) { box-shadow: inset -1px 0 0 color-mix(in srgb, currentColor 24%, transparent); }
+.rw-split > .rw-split__more.rw-btn--primary {
+  box-shadow:
+    inset 1px 0 0 color-mix(in srgb, currentColor 24%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / .22);
+}
+.rw-split--sm > .rw-split__more { width: calc(var(--rw-ctl-h-sm) - .125rem); }
+.rw-split--lg > .rw-split__more { width: calc(var(--rw-ctl-h-lg) - .25rem); }
+.rw-split__more > .rw-icon { transition: rotate var(--rw-dur-2) var(--rw-ease); }
+.rw-split__more[aria-expanded="true"] > .rw-icon { rotate: 180deg; }
+/* The pressed half scales alone; scaling the whole group would open the seam. */
+.rw-split > .rw-btn:active:not(:disabled, [aria-disabled="true"]) { transform: scale(calc(1 - (1 - var(--rw-press)) / 2)); }
+.rw-split--block { display: flex; width: 100%; }
+.rw-split--block > .rw-split__main { flex: 1; }
+
+/* ── CopyField ─────────────────────────────────────────────────── */
+.rw-copy {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  min-width: 0;
+  padding: .25rem;
+  padding-inline-start: .625rem;
+  border: 1px solid var(--hair);
+  border-radius: var(--rw-r-ctl);
+  /* Over the panel, so a copy field on the page ground keeps its label's contrast. */
+  background: linear-gradient(var(--rw-fill), var(--rw-fill)), var(--panel);
+}
+.rw-copy__label { flex: none; color: var(--ink-3); font-size: .75rem; font-weight: 650; }
+.rw-copy__value {
+  flex: 1;
+  min-width: 0;
+  padding-block: .25rem;
+  color: var(--ink);
+  font: 500 .8125rem/1.45 var(--g-mono);
+  overflow-wrap: anywhere;
+  user-select: all;
+  -webkit-user-select: all;
+}
+.rw-copy--truncate .rw-copy__value { overflow: hidden; overflow-wrap: normal; text-overflow: ellipsis; white-space: nowrap; }
+/* Script-only: hidden until .js is on <html> (themeBootstrap sets it). */
+.rw-copy > .rw-copy__btn { display: none; flex: none; align-self: flex-start; }
+.js .rw-copy > .rw-copy__btn { display: inline-flex; }
+/* Child selectors, so the swap outranks .rw-icon in whichever order the
+ * sheets load. */
+.rw-copy__btn > .rw-copy__done { display: none; }
+.is-copied .rw-copy__btn > .rw-copy__idle { display: none; }
+.is-copied .rw-copy__btn > .rw-copy__done { display: inline-block; color: var(--rw-ok); }
+
+@media print {
+  .rw-split__more,
+  .rw-copy__btn { display: none !important; }
+}

@@ -1,0 +1,31 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import ReactionBar from '@robyrew/ui/components/ReactionBar.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="reaction-bar" title="ReactionBar" lead="Emoji reactions with counts, from ChatForge. A press flips your own reaction at once and dispatches rw:react; the smile opens a picker (a bottom sheet on a phone). With an action the bar is a POST form that works with no script; a page that persists reactions itself calls preventDefault on rw:react, as the second bar here does.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="ReactionBar">
+        <h3 class="pv-h">Script-driven (no form)</h3>
+        <ReactionBar id={`pv-react-a-${t}`} reactions={[
+          { emoji: '👍', count: 12, mine: true, label: 'You and 11 others' },
+          { emoji: '❤️', count: 4 },
+          { emoji: '🎉', count: 1 },
+          { emoji: '😮', count: 1534 },
+        ]} />
+        <h3 class="pv-h">A form, taken over by the page</h3>
+        <div data-pv-takeover>
+          <ReactionBar id={`pv-react-b-${t}`} action="/kit/reaction-bar/" fields={{ release: '1.2.52.400' }} reactions={[{ emoji: '🚀', count: 3 }]} quick={['👍', '❤️', '😂', '😮', '😢', '🎉', '🚀', '🐛', '👀', '🙏', '🔥', '👎']} />
+        </div>
+        <h3 class="pv-h">Read-only, and empty</h3>
+        <ReactionBar id={`pv-react-c-${t}`} readonly reactions={[{ emoji: '👍', count: 2 }, { emoji: '🐛', count: 5 }]} />
+        <div class="pv-surface">
+          <ReactionBar id={`pv-react-d-${t}`} />
+          <p class="pv-note">No reactions yet: only the add button.</p>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

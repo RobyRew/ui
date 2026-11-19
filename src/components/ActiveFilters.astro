@@ -1,0 +1,43 @@
+---
+/** ActiveFilters — the filters in force, each one removable, and "Clear all".
+ *
+ *  With `href` a chip is a link to the same page without that filter, which
+ *  is what a server-rendered list wants. Without it a chip is a button that
+ *  dispatches `rw:remove` (detail { name, value, chip }) and removes itself
+ *  unless the listener calls preventDefault; "Clear all" dispatches
+ *  `rw:clear`. With no filters the row renders hidden. */
+import './Filters.css';
+import Icon from './Icon.astro';
+import type { ActiveFilter } from '../index';
+
+interface Props {
+  filters: ActiveFilter[];
+  /** "Clear all": a URL, or true for a button. Shown from two filters up. */
+  clear?: string | boolean;
+  labels?: { group?: string; title?: string; remove?: string; clear?: string };
+  class?: string;
+}
+const { filters, clear = true, labels = {}, class: cls } = Astro.props;
+const remove = labels.remove ?? 'Remove';
+---
+<div class:list={['rw-active', cls]} role="group" aria-label={labels.group ?? 'Active filters'} hidden={filters.length === 0 || undefined}>
+  {labels.title && <span class="rw-active__label" aria-hidden="true">{labels.title}</span>}
+  {filters.map((f) => f.href ? (
+    <a class="rw-active__chip" href={f.href} aria-label={`${remove} ${f.label}`}>
+      <span>{f.label}</span><span class="rw-active__x" aria-hidden="true"><Icon name="x" size={12} /></span>
+    </a>
+  ) : (
+    <button type="button" class="rw-active__chip" data-rw-remove={f.name ?? ''} value={f.value} aria-label={`${remove} ${f.label}`}>
+      <span>{f.label}</span><span class="rw-active__x" aria-hidden="true"><Icon name="x" size={12} /></span>
+    </button>
+  ))}
+  {clear && filters.length > 1 && (typeof clear === 'string'
+    ? <a class="rw-active__clear" href={clear}>{labels.clear ?? 'Clear all'}</a>
+    : <button type="button" class="rw-active__clear" data-rw-clear>{labels.clear ?? 'Clear all'}</button>)}
+</div>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initFilters } from '../behaviors/filters.js';
+  onReady(initFilters);
+</script>

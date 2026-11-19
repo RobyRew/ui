@@ -1,0 +1,45 @@
+---
+/** CopyField — a monospace value (a checksum, a command, a URL) and a button
+ *  that copies it. One click on the value selects all of it; the button,
+ *  which needs script, is hidden until there is script to run it. After a
+ *  copy the button says so for two seconds and a live region announces it.
+ *  `display` shows a shortened value while the full one is copied. */
+import './Downloads.css';
+import Icon from './Icon.astro';
+
+interface Props {
+  value: string;
+  /** A short name before the value ("SHA-256"). */
+  label?: string;
+  display?: string;
+  /** One line, cut with an ellipsis (the full value is the title). */
+  truncate?: boolean;
+  id?: string;
+  labels?: { copy?: string; copied?: string };
+  class?: string;
+}
+const { value, label, display, truncate = false, id, labels = {}, class: cls } = Astro.props;
+const copy = labels.copy ?? 'Copy';
+const copied = labels.copied ?? 'Copied';
+---
+<div class:list={['rw-copy', { 'rw-copy--truncate': truncate }, cls]} id={id} data-rw-copy-value={display ? value : undefined}>
+  {label && <span class="rw-copy__label">{label}</span>}
+  <code class="rw-copy__value" title={truncate || display ? value : undefined}>{display ?? value}</code>
+  <button
+    type="button"
+    class="rw-btn rw-btn--sm rw-copy__btn"
+    data-rw-copy
+    aria-label={label ? `${copy} ${label}` : undefined}
+    data-announce={label ? `${label}: ${copied}` : copied}
+  >
+    <Icon name="copy" size={15} class="rw-copy__idle" />
+    <Icon name="check" size={15} class="rw-copy__done" />
+    <span class="rw-copy__text" data-idle={copy} data-done={copied}>{copy}</span>
+  </button>
+</div>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initCopy } from '../behaviors/copy.js';
+  onReady(initCopy);
+</script>

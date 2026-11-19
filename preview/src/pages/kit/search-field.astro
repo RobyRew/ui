@@ -1,0 +1,34 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import SearchField from '@robyrew/ui/components/SearchField.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="search-field" title="SearchField" lead="A capsule search with a leading icon. Type, and ✕ appears; ✕ or Escape clears it and fires input, as typing does. Press / anywhere outside a field to focus the first one (the hint shows where there is a keyboard).">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="SearchField">
+        <h3 class="pv-h">On the page, with a shortcut</h3>
+        <form role="search" action="#" data-pv-nosubmit>
+          <SearchField label="Search versions" placeholder="Search 1,284 versions" shortcut={t === 'dark' ? '/' : undefined} id={`pv-q-${t}`} />
+        </form>
+        <h3 class="pv-h">Small, with a value</h3>
+        <SearchField label="Filter comments" size="sm" value="crash on launch" id={`pv-q2-${t}`} />
+        <h3 class="pv-h">In a card</h3>
+        <div class="pv-surface"><SearchField label="Search messages" id={`pv-q3-${t}`} /></div>
+        <p class="pv-note" data-pv-echo={t}>input: —</p>
+      </Pane>
+    ))}
+  </div>
+</Kit>
+
+<script>
+  document.addEventListener('submit', (e) => { if ((e.target as Element).matches('[data-pv-nosubmit]')) e.preventDefault(); });
+  document.addEventListener('input', (e) => {
+    const input = e.target;
+    if (!(input instanceof HTMLInputElement) || !input.closest('.rw-search')) return;
+    const pane = input.closest('[data-theme]');
+    const out = pane?.querySelector('[data-pv-echo]');
+    if (out) out.textContent = `input: “${input.value}”`;
+  });
+</script>

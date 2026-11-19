@@ -1,0 +1,45 @@
+---
+/** ChipSelect — a native <select> inside a filter chip (from chat-converter's
+ *  inbox toolbar). The whole chip opens the platform's own picker; a choice
+ *  other than the first option tints the chip, with no script. Make the first
+ *  option the "any" one ("All platforms"), or pass `neutral`.
+ *
+ *  In a GET form it is a plain field; `autosubmit` submits the form on change
+ *  (behaviors/filters.js). */
+import './Filters.css';
+import Icon from './Icon.astro';
+import type { IconName } from '../icons.js';
+import type { FilterOption } from '../index';
+
+interface Props {
+  /** The accessible name ("Platform"). */
+  label: string;
+  name: string;
+  options: Array<FilterOption | [value: string, label: string]>;
+  value?: string;
+  icon?: IconName;
+  id?: string;
+  /** The id of a form elsewhere on the page. */
+  form?: string;
+  autosubmit?: boolean;
+  /** Never tint, whatever is chosen (a sort order, say). */
+  neutral?: boolean;
+  disabled?: boolean;
+  class?: string;
+}
+const { label, name, options, value, icon, id, form, autosubmit, neutral, disabled, class: cls } = Astro.props;
+const opts = options.map((o) => (Array.isArray(o) ? { value: o[0], label: o[1] } : o));
+---
+<label class:list={['rw-chipselect', cls]} data-neutral={neutral ? '' : undefined}>
+  {icon && <Icon name={icon} size={15} class="rw-chipselect__icon" />}
+  <select name={name} id={id} form={form} aria-label={label} disabled={disabled} data-rw-autosubmit={autosubmit ? '' : undefined}>
+    {opts.map((o) => <option value={o.value} selected={o.value === value} disabled={o.disabled}>{o.label}</option>)}
+  </select>
+  <Icon name="chevronDown" size={14} class="rw-chipselect__chev" />
+</label>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initFilters } from '../behaviors/filters.js';
+  onReady(initFilters);
+</script>

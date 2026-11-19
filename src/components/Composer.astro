@@ -1,0 +1,77 @@
+---
+/** Composer — the box a comment is written in (from ChatForge's composer).
+ *
+ *  A form whose field grows with its text up to 16rem, then scrolls
+ *  (field-sizing where the browser has it, a measured height elsewhere).
+ *  ⌘↵ / Ctrl+↵ submits; enter="send" makes Enter submit and Shift+Enter
+ *  break the line, as in a chat. The submit button is disabled while the text
+ *  is blank, a counter shows from 80% of maxlength, and a submit the page
+ *  does not take over itself shows the busy spinner (busyLabel). The field
+ *  is `required`, so with no script an empty post is stopped by the browser.
+ *
+ *  Slots: default (hidden fields: a release id, a parent comment, a CSRF
+ *  token), `context` (above the field: "Replying to @x" and a cancel button),
+ *  `tools` (beside the submit button).
+ */
+import './Social.css';
+import { uid } from '../behaviors/core.js';
+
+interface Props {
+  /** The field's accessible name ("Write a comment"). */
+  label: string;
+  action?: string;
+  method?: 'post' | 'get' | 'dialog';
+  name?: string;
+  id?: string;
+  placeholder?: string;
+  value?: string;
+  maxlength?: number;
+  required?: boolean;
+  /** The submit button's label. Default "Post". */
+  submit?: string;
+  busyLabel?: string;
+  /** A line of help beside the button ("⌘↵ to post"). */
+  hint?: string;
+  enter?: 'newline' | 'send';
+  disabled?: boolean;
+  autofocus?: boolean;
+  class?: string;
+}
+const {
+  label,
+  action,
+  method = 'post',
+  name = 'body',
+  id = uid('rw-composer'),
+  placeholder,
+  value = '',
+  maxlength,
+  required = true,
+  submit = 'Post',
+  busyLabel,
+  hint,
+  enter = 'newline',
+  disabled = false,
+  autofocus = false,
+  class: cls,
+} = Astro.props;
+const fieldId = `${id}-field`;
+---
+<form class:list={['rw-composer', cls]} id={id} method={method} action={action} data-rw-enter={enter === 'send' ? 'send' : undefined}>
+  <slot />
+  {Astro.slots.has('context') && <div class="rw-composer__context"><slot name="context" /></div>}
+  <label class="rw-sr-only" for={fieldId}>{label}</label>
+  <textarea class="rw-composer__field" id={fieldId} name={name} rows="2" placeholder={placeholder} maxlength={maxlength} required={required} disabled={disabled} autofocus={autofocus}>{value}</textarea>
+  <div class="rw-composer__foot">
+    {hint && <p class="rw-composer__hint">{hint}</p>}
+    <slot name="tools" />
+    {maxlength && <span class="rw-composer__count" data-state="idle"></span>}
+    <button type="submit" class="rw-btn rw-btn--primary rw-btn--sm rw-composer__submit" disabled={disabled} data-busy-label={busyLabel}>{submit}</button>
+  </div>
+</form>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initSocial } from '../behaviors/social.js';
+  onReady(initSocial);
+</script>

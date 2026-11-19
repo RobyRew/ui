@@ -1,0 +1,65 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Menu from '@robyrew/ui/components/Menu.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="menu" title="Menu" lead="A list of actions in a Popover. Opened from the keyboard, focus lands on the first item; arrows, Home and End move, typing a letter jumps to the item that starts with it. Choosing an item dispatches rw:select (see Events below) and closes the menu.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="Menu">
+        <div class="pv-surface">
+          <h3>Actions, a heading, a danger item</h3>
+          <div class="rw-actions">
+            <Menu
+              id={`pv-menu-actions-${t}`}
+              label="Release actions"
+              theme={t}
+              trigger={{ label: 'More', icon: 'more', iconOnly: true }}
+              items={[
+                { label: 'Copy link', icon: 'link', value: 'copy-link', tail: '⌘L' },
+                { label: 'Open changelog', icon: 'external', href: '#', external: true },
+                { label: 'Report a problem', icon: 'flag', value: 'report', hint: 'Broken download, wrong hash' },
+                'separator',
+                { heading: 'Moderation' },
+                { label: 'Hide release', icon: 'eye', value: 'hide', disabled: true, hint: 'Moderators only' },
+                { label: 'Delete', icon: 'trash', value: 'delete', danger: true },
+              ]}
+            />
+            <Menu
+              id={`pv-menu-sort-${t}`}
+              label="Sort"
+              theme={t}
+              width="sm"
+              trigger={{ label: 'Sort: Newest', icon: 'sort' }}
+              items={[
+                { heading: 'Sort by' },
+                { label: 'Newest', value: 'new', checked: true },
+                { label: 'Oldest', value: 'old', checked: false },
+                { label: 'Most liked', value: 'liked', checked: false },
+                { heading: 'Show' },
+                { label: 'Expired links', value: 'expired', checked: true, role: 'checkbox' },
+              ]}
+            />
+            <Menu
+              id={`pv-menu-mirrors-${t}`}
+              label="Mirrors"
+              title="Download from"
+              width="lg"
+              theme={t}
+              trigger={{ label: 'Mirrors', icon: 'download' }}
+              items={[
+                { label: 'Spotify CDN', href: '#', dot: 'ok', hint: 'Official · checked 4 min ago', tail: '98.4 MB' },
+                { label: 'RobyRew archive', href: '#', dot: 'ok', hint: 'R2 copy', tail: '98.4 MB' },
+                { label: 'LoadSpot (amd64fox)', href: '#', dot: 'warn', hint: 'Slow responses today' },
+                { label: 'Old CDN path', dot: 'danger', hint: 'Link expired', disabled: true },
+                { label: 'Unchecked mirror', href: '#', dot: 'unknown', hint: 'Not probed yet' },
+              ]}
+            />
+          </div>
+          <p class="pv-note">The sort menu's radios stay in their group; the checkbox under "Show" flips on its own.</p>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

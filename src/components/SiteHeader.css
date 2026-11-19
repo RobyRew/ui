@@ -1,0 +1,295 @@
+/* SiteHeader — the house site header (behaviors/sitehead.js).
+ *
+ * Ported from chat-converter's header, which does not use GlassBar: a sticky
+ * shell holding an 18px glass bar (brand, links, theme switch, actions, the
+ * account slot) and, as the bar's sibling, a glass menu panel for screens
+ * under 760px. The panel cannot live inside the bar: a backdrop-filter nested
+ * in another one only blurs what is inside the first.
+ *
+ * The bar's fills come from the glass ramp (--g-fill*, --g-ink*), so they hold
+ * in both themes; chat-converter's rgb(var(--rim-rgb) / x) fills were white in
+ * the light theme too, and all but vanished on frosted glass.
+ *
+ * The shell carries .rw-scroll-edge by default (the scrollEdge prop): page
+ * content fades into the ground just before it passes under the bar, so the
+ * glass keeps its ink's contrast over a white card or a photograph.
+ *
+ * The fold to the menu keys off .js on <html> (themeBootstrap sets it before
+ * the first paint): without script the links stay in the bar and scroll
+ * sideways when they do not fit, and the theme switch, which needs script,
+ * is not shown.
+ */
+.rw-site-head {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding:
+    max(.6rem, env(safe-area-inset-top, 0px))
+    max(var(--gutter), env(safe-area-inset-right, 0px))
+    0
+    max(var(--gutter), env(safe-area-inset-left, 0px));
+}
+.rw-site-bar {
+  --r: var(--rw-r-glass-sm);
+  --pad: .45rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  max-width: var(--site-max);
+  margin-inline: auto;
+  padding: var(--pad);
+  padding-inline-start: .6rem;
+}
+
+/* ── Brand ─────────────────────────────────────────────────────── */
+.rw-site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  border-radius: calc(var(--r) - var(--pad));
+  color: var(--g-ink);
+  font-size: .9375rem;
+  font-weight: 750;
+  letter-spacing: -.01em;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.rw-site-brand__mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: calc(var(--r) - var(--pad));
+  color: var(--on-accent);
+  background: linear-gradient(150deg,
+    color-mix(in oklab, var(--accent) 82%, white),
+    color-mix(in oklab, var(--accent) 70%, black));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .3);
+}
+.rw-site-brand__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rw-site-brand__name small { margin-inline-start: .3rem; color: var(--g-ink-mute); font-size: .8125rem; font-weight: 600; }
+
+/* ── Links ─────────────────────────────────────────────────────── */
+.rw-site-links {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  margin-inline: .5rem auto;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+.rw-site-links::-webkit-scrollbar { display: none; }
+.rw-site-link {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .42rem .8rem;
+  border-radius: 999px;
+  color: var(--g-ink-dim);
+  font-size: .86rem;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--rw-dur-1) var(--rw-ease), background-color var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-site-link:hover { color: var(--g-ink); background: var(--g-fill); }
+}
+.rw-site-link[aria-current="page"] { color: var(--g-ink); background: var(--g-fill-2); }
+
+/* ── Actions: theme switch, action pills, the account slot ──────── */
+.rw-site-actions {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex: none;
+  margin-inline-start: auto;
+}
+.rw-site-extra { display: flex; align-items: center; gap: .4rem; }
+.rw-site-account { display: flex; align-items: center; gap: .4rem; }
+
+/* The theme switch is a .rw-seg; on glass its well is the glass fill. */
+.rw-site-head .rw-seg { background: var(--g-fill); box-shadow: none; }
+.rw-site-head .rw-seg__item { color: var(--g-ink-mute); }
+@media (hover: hover) {
+  .rw-site-head .rw-seg__item:hover { color: var(--g-ink); }
+}
+.rw-site-head .rw-seg__item:is([aria-checked="true"], .is-active) { color: var(--g-ink); }
+.rw-site-theme .rw-seg__item { min-height: 28px; }
+.rw-site-theme.rw-seg--icon { grid-auto-columns: 30px; }
+:root:not(.js) .rw-site-theme,
+:root:not(.js) .rw-site-menu__theme { display: none; }
+
+/* A link or button pill in the bar: "Source", "Sign in". */
+.rw-site-action {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 2rem;
+  padding: .35rem .85rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--g-fill-2);
+  box-shadow: inset 0 0 0 1px var(--g-hair);
+  color: var(--g-ink);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-site-action:hover { background: var(--g-fill-3); }
+}
+.rw-site-action:active { transform: scale(var(--rw-press)); }
+.rw-site-action--primary { background: var(--accent); box-shadow: none; color: var(--on-accent); }
+@media (hover: hover) {
+  .rw-site-action--primary:hover { background: color-mix(in oklab, var(--accent) 88%, var(--ink)); }
+}
+
+/* An avatar that opens the account menu. */
+.rw-site-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--g-fill);
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-site-avatar:hover { background: var(--g-fill-3); }
+}
+.rw-site-avatar:active { transform: scale(var(--rw-press)); }
+
+/* ── The menu button and the phone menu ─────────────────────────── */
+.rw-site-menu-btn {
+  display: none;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--r) - var(--pad) + 1px);
+  background: var(--g-fill);
+  color: var(--g-ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease), transform var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  .rw-site-menu-btn:hover { background: var(--g-fill-2); }
+}
+.rw-site-menu-btn:active { transform: scale(calc(var(--rw-press) - .03)); }
+.rw-site-menu-btn .rw-site-menu-btn__close { display: none; }
+.rw-site-menu-btn[aria-expanded="true"] .rw-site-menu-btn__open { display: none; }
+.rw-site-menu-btn[aria-expanded="true"] .rw-site-menu-btn__close { display: block; }
+
+.rw-glass.rw-site-menu,
+.rw-surface.rw-site-menu {
+  --r: 20px;
+  --pad: .5rem;
+  position: absolute;
+  top: calc(100% + .5rem);
+  left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  max-width: var(--site-max);
+  max-height: calc(100dvh - var(--site-head) - 1rem);
+  margin-inline: auto;
+  padding: var(--pad);
+  overflow: auto;
+  overscroll-behavior: contain;
+  transform-origin: top center;
+  animation: rw-drop var(--rw-dur-3) var(--rw-ease-spring) both;
+}
+.rw-site-menu[hidden] { display: none; }
+.rw-site-menu ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.rw-site-menu__link {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  padding: .7rem .85rem;
+  border-radius: calc(var(--r) - var(--pad));
+  color: var(--g-ink);
+  font-size: 1rem;
+  font-weight: 650;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease);
+}
+.rw-site-menu__link > .rw-icon { color: var(--g-ink-dim); }
+@media (hover: hover) {
+  .rw-site-menu__link:hover { background: var(--g-fill); }
+}
+.rw-site-menu__link:active,
+.rw-site-menu__link[aria-current="page"] { background: var(--g-fill-2); }
+.rw-site-menu__extra {
+  margin-top: .4rem;
+  padding: .5rem .35rem .25rem;
+  border-top: 1px solid var(--g-hair);
+}
+.rw-site-menu__theme {
+  display: grid;
+  gap: .5rem;
+  margin-top: .4rem;
+  padding: .75rem .85rem .5rem;
+  border-top: 1px solid var(--g-hair);
+  color: var(--g-ink-dim);
+  font-size: .78rem;
+  font-weight: 700;
+}
+.rw-site-menu__theme .rw-seg { width: 100%; }
+.rw-site-menu__theme .rw-seg__item { min-height: 2.25rem; font-size: .82rem; }
+
+/* Under 760px, with script: links, the theme switch and the action pills
+ * fold into the menu; the account slot stays in the bar. */
+@media (max-width: 759.98px) {
+  .js .rw-site-links,
+  .js .rw-site-actions > .rw-site-theme,
+  .js .rw-site-extra { display: none; }
+  .js .rw-site-menu-btn { display: grid; }
+}
+@media (min-width: 760px) {
+  .rw-site-menu { display: none; }
+}
+/* Watch-sized: the brand keeps only its mark. */
+@media (max-width: 300px) {
+  .rw-site-brand__name { display: none; }
+}
+
+/* ── Focus ─────────────────────────────────────────────────────── */
+:where(.rw-site-brand, .rw-site-link, .rw-site-action, .rw-site-avatar, .rw-site-menu-btn):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+.rw-site-menu__link:focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: -2px;
+}
+
+/* Toasts come in under the header, not over it. */
+:root:has(.rw-site-head) { --rw-toast-offset: var(--site-head); }
+
+@media print {
+  .rw-site-head { position: static; }
+  .rw-site-menu,
+  .rw-site-menu-btn,
+  .rw-site-theme { display: none !important; }
+}

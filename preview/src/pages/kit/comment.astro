@@ -1,0 +1,45 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Comment from '@robyrew/ui/components/Comment.astro';
+import LikeButton from '@robyrew/ui/components/LikeButton.astro';
+import ReactionBar from '@robyrew/ui/components/ReactionBar.astro';
+import Icon from '@robyrew/ui/components/Icon.astro';
+import { THEMES } from '../../lib/kit';
+import { artSea } from '../../lib/art';
+const now = Date.now();
+const ago = (min: number) => new Date(now - min * 60_000).toISOString();
+---
+<Kit slug="comment" title="Comment" lead="One comment: the avatar, the name or @handle, a relative time that links to the comment itself (its title is the full local date), the body, an actions row and replies. Times are rendered on the server and refreshed against the reader's clock.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="Comment">
+        <ol class="rw-comments">
+          <Comment as="li" id={`c1-${t}`} handle="robyrew" badge="Author" datetime={ago(3)} profileHref="#" text={'First build with the new player.\nThe download from the archive matched the official SHA-256.'}>
+            <Fragment slot="actions">
+              <LikeButton count={4} plain liked />
+              <button class="rw-comment__action" type="button"><Icon name="reply" size={15} />Reply</button>
+              <button class="rw-comment__action" type="button"><Icon name="flag" size={15} />Report</button>
+            </Fragment>
+            <Fragment slot="replies">
+              <Comment as="li" id={`c2-${t}`} handle="saerun" name="Sae Run" avatar={artSea} datetime={ago(55)} profileHref="#" edited text="Same here on arm64.">
+                <Fragment slot="actions">
+                  <LikeButton count={1} plain />
+                  <button class="rw-comment__action" type="button"><Icon name="reply" size={15} />Reply</button>
+                </Fragment>
+              </Comment>
+              <Comment as="li" id={`c3-${t}`} handle="user-32z5gu" datetime={ago(60 * 26)} deleted />
+            </Fragment>
+          </Comment>
+          <Comment as="li" id={`c4-${t}`} handle="gcalin_dtag" datetime={ago(60 * 24 * 40)} profileHref="#">
+            <p>Rich body from the default slot, with <a href="#">a link</a>.</p>
+            <p>A second paragraph.</p>
+            <Fragment slot="actions">
+              <ReactionBar id={`pv-c-react-${t}`} reactions={[{ emoji: '👍', count: 2 }, { emoji: '🐛', count: 1, mine: true }]} />
+            </Fragment>
+          </Comment>
+        </ol>
+      </Pane>
+    ))}
+  </div>
+</Kit>

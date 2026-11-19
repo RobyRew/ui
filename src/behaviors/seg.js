@@ -51,6 +51,11 @@ function select(seg, item, focus = false) {
 
 function bindSeg(seg) {
   if (!claim(seg)) return;
+  // The first placement jumps (controls.css: .rw-seg.is-instant). Two frames
+  // cover a selection that another init restores right after this one, such
+  // as initThemeControls() checking the stored theme.
+  seg.classList.add('is-instant');
+  requestAnimationFrame(() => requestAnimationFrame(() => seg.classList.remove('is-instant')));
   sync(seg);
   new MutationObserver(() => sync(seg)).observe(seg, {
     subtree: true,

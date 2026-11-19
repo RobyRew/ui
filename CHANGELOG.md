@@ -4,6 +4,99 @@ Versions are git tags (`npm i github:RobyRew/ui#vX.Y.Z`). While the package is
 0.x the minor digit is the breaking one: a 0.4 app may need the notes below
 before it moves from 0.3.
 
+## 0.5.0 — unreleased
+
+Pre-releases: `v0.5.0-rc.1` (2026-11-19).
+
+Additive: no class, prop, event or token from 0.4 was renamed or removed. The
+"Check" list below is what an app may notice.
+
+### App kit (new)
+
+Astro components for app pages, imported by path; each brings its family's
+stylesheet (`components/SiteHeader.css`, `Popover.css`, `Filters.css`,
+`Social.css`, `Downloads.css`), and `kit.css` bundles the five for pages that
+build the markup from script.
+
+- **SiteHeader** — sticky shell with an 18px glass bar (brand, links, an icon
+  theme radiogroup, action pills, an `account` slot) that folds into a glass
+  menu under 760px, measures itself into `--site-head`, and carries
+  `.rw-scroll-edge` (`scrollEdge`). Ported from chat-converter's header; its
+  `rgb(var(--rim-rgb) / x)` fills became the glass ramp, which also holds in
+  the light theme.
+- **Popover**, **Menu** — an opaque `<dialog>` that hangs from its trigger on
+  a wide screen and is a bottom sheet (drag to dismiss) under 40rem; menus get
+  arrow keys, Home/End, type-ahead, radio and checkbox items, labelled groups,
+  status dots, and `rw:select`. From chat-converter's `overlay.ts` and
+  ChatForge's `Sheet.tsx`.
+- **ChipSelect**, **FilterChip**, **SearchField**, **ActiveFilters**, and the
+  `.rw-filters` row — from chat-converter's inbox toolbar; real form controls,
+  `autosubmit` forms, `rw:remove` / `rw:clear`.
+- **Avatar**, **UserChip** — `data-hue` / `data-size`, initials fallback for a
+  picture that fails to load.
+- **ReactionBar** (with a picker), **LikeButton**, **Comment**, **Composer** —
+  from ChatForge's reactions, quick-reaction row and composer; optimistic
+  updates, `rw:react` / `rw:like`, POST forms that work with no script,
+  relative times refreshed on the client.
+- **SplitButton** (a download and its mirrors), **CopyField**, **StatusDot**.
+- **EmptyState**, **Skeleton**, **LoadMore** (fetches the next page and
+  appends it in place), **PageHead**, **Disclosure**, **Callout**, and the
+  `.rw-table` classes — from chat-converter's page styles.
+- **Icon** and `@robyrew/ui/icons`: chat-converter's 59 stroke icons with the
+  same names and paths, 26 more, and five platform marks (windows, apple,
+  linux, android, store). `iconSvg()` / `icon()` for script.
+
+### Controls
+
+- Content primitives in `controls.css`, so they need no sheet of their own:
+  `.rw-icon`, `.rw-avatar` / `.rw-avatars`, `.rw-userchip`, `.rw-dot` /
+  `.rw-status`, `.rw-skeleton` / `.rw-skeleton-lines`, `.rw-empty`,
+  `.rw-load-more`, `.rw-table` / `.rw-table-wrap`, `.rw-page-head`,
+  `.rw-disclosure`, `.rw-callout`.
+- `.rw-chip` can wrap a checkbox or radio (the chip reads `:checked` through
+  `:has()`), with `.rw-chip__count`.
+- `.rw-seg--icon` for square icon segments.
+- `.rw-seg.is-instant`: a segmented control places its thumb without the
+  slide on the first sync (behaviors/seg.js holds it for two frames), so a
+  selection restored on load — a stored theme — no longer sweeps across the
+  control on every page.
+
+### Tokens
+
+- `--rw-av-0` … `--rw-av-7` and `--rw-av-ink` per theme: the avatar tints,
+  eight hues at OKLCH chroma ≈ .04.
+- `--rw-e4` (overlay elevation), `--g-emoji` (colour-emoji font stack).
+- `--site-max` (96rem), `--gutter` (1rem, 1.5rem from 40rem), `--site-head`
+  (4rem, replaced by SiteHeader's measurement).
+- `scripts/check-contrast.mjs` measures the new pairs: initials on every tint,
+  status dots, callout text and icons per tone, the table head, menu hover,
+  soft-accent chips, the search and copy fields, the header's brand mark and
+  theme switch.
+
+### Behaviours
+
+- New: `initSiteHeads`, `initPopovers` / `openPopover` / `closePopover`,
+  `initFilters`, `initAvatars` / `avatarHue` / `initials`, `initSocial` /
+  `setReaction` / `setLike`, `formatCount`, `initCopy` / `copyText`,
+  `initLoadMore` / `loadMore`, `initRelativeTimes` / `formatRelative` /
+  `formatAbsolute`, `markJs`; all wired into `initAll()`.
+- Events: `rw:select` is also dispatched by menus; new `rw:react`, `rw:like`,
+  `rw:remove`, `rw:clear`, `rw:copy`, `rw:loaded`, `rw:loaderror`.
+- `enableCommands()` ignores a click another behaviour already cancelled, so
+  popover triggers open once.
+- `setTheme()` catches the rejection a skipped view transition raises when
+  the theme is switched twice in quick succession (it reached the console as
+  an unhandled `AbortError`).
+
+### Check
+
+- `tokens.css` now declares `--site-max`, `--gutter` and `--site-head` on
+  `:root`. An app that sets its own in an unlayered `:root` (or after
+  importing the tokens) keeps them; one that imports `tokens.css` after its
+  own declarations gets the package's values.
+- The new classes all start with `rw-`; an app with its own `.rw-table`,
+  `.rw-avatar` or `.rw-icon` rule would now combine with the package's.
+
 ## 0.4.0 — 2026-11-11
 
 ### Themes

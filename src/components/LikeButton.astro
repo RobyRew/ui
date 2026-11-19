@@ -1,0 +1,46 @@
+---
+/** LikeButton — a heart and a count (aria-pressed). A press flips it at once
+ *  and dispatches `rw:like` (detail { liked, count, previous }); setLike()
+ *  restores the server's numbers. With `action` it is a one-button POST form
+ *  (name=`name`, value "1" to like, "0" to unlike) that works with no script
+ *  and posts natively unless a `rw:like` listener calls preventDefault.
+ *  `plain` drops the outline, for a table row or a comment's actions. */
+import './Social.css';
+import Icon from './Icon.astro';
+import { formatCount } from '../behaviors/format.js';
+
+interface Props {
+  count?: number;
+  liked?: boolean;
+  action?: string;
+  name?: string;
+  /** Hidden fields for the form. */
+  fields?: Record<string, string>;
+  /** The accessible name. Default "Like". */
+  label?: string;
+  plain?: boolean;
+  id?: string;
+  locale?: string;
+  class?: string;
+}
+const { count = 0, liked = false, action, name = 'like', fields = {}, label = 'Like', plain = false, id, locale, class: cls } = Astro.props;
+const classes = ['rw-like', { 'rw-like--plain': plain }, cls];
+---
+{action ? (
+  <form class="rw-like-form" method="post" action={action}>
+    {Object.entries(fields).map(([k, v]) => <input type="hidden" name={k} value={v} />)}
+    <button type="submit" class:list={classes} id={id} name={name} value={liked ? '0' : '1'} aria-pressed={liked ? 'true' : 'false'} data-count={count} data-rw-like>
+      <Icon name="heart" size={17} /><span class="rw-sr-only">{label}</span><span class="rw-like__count">{formatCount(count, locale)}</span>
+    </button>
+  </form>
+) : (
+  <button type="button" class:list={classes} id={id} aria-pressed={liked ? 'true' : 'false'} data-count={count} data-rw-like>
+    <Icon name="heart" size={17} /><span class="rw-sr-only">{label}</span><span class="rw-like__count">{formatCount(count, locale)}</span>
+  </button>
+)}
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initSocial } from '../behaviors/social.js';
+  onReady(initSocial);
+</script>

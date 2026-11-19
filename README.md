@@ -1,15 +1,17 @@
 # @robyrew/ui
 
 The RobyRew design system: one glass material — **Obsidian** — in eleven
-formats, an Apple-style control set for the content underneath it, and the
-small scripts that make both behave on a watch, a phone, an iPad and a desktop.
+formats, an Apple-style control set for the content underneath it, an app kit
+of components for app pages (a site header, menus, filters, people, reactions
+and comments, downloads, list states), an icon set, and the small scripts that
+make all of it behave on a watch, a phone, an iPad and a desktop.
 
 Astro components, no React, no icon font, no build step, no dependencies.
 
 ## Install
 
 ```bash
-npm i github:RobyRew/ui#v0.4.0
+npm i github:RobyRew/ui#v0.5.0
 ```
 
 Installed from a public git tag rather than a registry. **Not GitHub Packages:**
@@ -199,18 +201,26 @@ Pair that with the stylesheet for the formats:
 ```
 
 Every behaviour is progressive. Without the script, links are links, the bar's
-menu still opens (it is a popover), a modal sheet or palette opens from
-`<button commandfor="id" command="show-modal">` in browsers with invoker
-commands, forms post, and the footer simply shows every column. The script
-adds gestures, keyboard handling, timers and exit animations. Events:
-`rw:select` (palette), `rw:change` (managed segmented control), `rw:dismiss`
-(toast), `rw:play` / `rw:pause` / `rw:prev` / `rw:next` / `rw:seek` (player),
-`rw:themechange` (on `document`).
+menu still opens (it is a popover), a modal sheet, palette, popover or menu
+opens from `<button commandfor="id" command="show-modal">` in browsers with
+invoker commands, forms post, and the footer simply shows every column. The
+script adds gestures, keyboard handling, timers and exit animations. Events:
+`rw:select` (palette, menu), `rw:change` (managed segmented control),
+`rw:dismiss` (toast), `rw:play` / `rw:pause` / `rw:prev` / `rw:next` /
+`rw:seek` (player), `rw:react`, `rw:like` (social), `rw:remove`, `rw:clear`
+(active filters), `rw:copy`, `rw:loaded` / `rw:loaderror` (load more),
+`rw:themechange` (on `document`). The app kit's events are listed with it
+below.
 
-**CSP.** No component writes a `style=""` attribute — a strict `style-src`
-(Astro's `security.csp`) would block it. Levels and bar heights travel as
-`data-pct` and become `--rw-pct` through generated rules; scripts set custom
-properties through the CSSOM, which a CSP does not block.
+**CSP.** No component writes a `style=""` attribute, and none uses an inline
+event handler — a strict `style-src` / `script-src` (Astro's `security.csp`)
+would block both. Levels and bar heights travel as `data-pct` and become
+`--rw-pct` through generated rules, avatar tints and sizes as `data-hue` /
+`data-size`; scripts set custom properties (a popover's position, the
+measured `--site-head`) through the CSSOM, which a CSP does not block.
+Controls that need script to work (a copy button, the header's menu toggle,
+the theme switch) are hidden until `.js` is on `<html>`, which
+`themeBootstrap` sets before the first paint.
 
 ## Changing the taste
 
@@ -281,6 +291,113 @@ is not glass: the content layer that sits on the page, opaque, never blurred.
 Radii nest concentrically: `.rw-card` republishes its radius as `--rw-r`, so a
 child subtracts its own padding from it.
 
+Since 0.5 `controls.css` also carries the content primitives the app kit is
+built from — `.rw-icon`, `.rw-avatar` (+ `.rw-avatars`), `.rw-userchip`,
+`.rw-dot` / `.rw-status`, `.rw-skeleton`, `.rw-empty`, `.rw-load-more`,
+`.rw-table`, `.rw-page-head`, `.rw-disclosure`, `.rw-callout`, a `.rw-chip`
+that wraps a checkbox, and `.rw-seg--icon` — described with the kit below.
+
+## App kit (0.5)
+
+Components for app pages — the Spotify versions archive is the first user.
+They are the opaque content layer, except SiteHeader, whose bar and phone
+menu are glass. Import them by path like the glass formats:
+
+```astro
+---
+import SiteHeader from '@robyrew/ui/components/SiteHeader.astro';
+import SplitButton from '@robyrew/ui/components/SplitButton.astro';
+import Icon from '@robyrew/ui/components/Icon.astro';
+---
+```
+
+Each component imports its family's stylesheet (`components/SiteHeader.css`,
+`Popover.css`, `Filters.css`, `Social.css`, `Downloads.css`), so a page pays
+for the families it renders. A page that builds this markup from script — a
+comment appended after a post, rows a React island draws — imports the
+family sheet itself, or all of them at once:
+
+```css
+@import '@robyrew/ui/kit.css' layer(components);   /* layer(...) under Tailwind */
+```
+
+The simple pieces (avatar, user chip, status dot, skeleton, empty state, load
+more, table, page head, disclosure, callout, icon) are **content primitives in
+`controls.css`**: plain classes, available wherever the two root sheets are,
+with thin Astro components that render exactly those classes.
+
+| Family | Component | What it is | Script adds · events |
+| --- | --- | --- | --- |
+| Header | `SiteHeader` | Sticky shell with an 18px glass bar: brand (name + icon mark, or a `brand` slot), links, an icon theme radiogroup (system / light / dark), action pills, an `account` slot. Under 760px links, switch and pills fold into a glass menu under the bar. Ported from chat-converter's header (not GlassBar). | Measures itself into `--site-head` on `<html>`; menu toggle (Escape, click outside, link followed, focus leaving, growing past 760px close it). Without script the links stay in the bar. |
+| Overlays | `Popover` | Opaque `<dialog>`: hangs from its trigger on a wide screen (end- or start-aligned, flips above, follows scroll/resize), a bottom sheet under 40rem (drag the handle down). | Anchoring, focus to `[data-autofocus]` or the panel, focus back to the trigger, `aria-expanded`, exit animations. `openPopover(id, { anchor, at })`. |
+| | `Menu` | A Popover with `role="menu"` items: buttons or links, icon or status dot, `hint`, `tail`, `danger`, `disabled`, radios/checkboxes, headings that open labelled groups; optional `trigger` button. | Arrow keys, Home/End, type-ahead; `rw:select` { row, value } (cancelable: keeps it open). |
+| Filters | `ChipSelect` | A native `<select>` in a chip; tints when set (anything but the first option), `neutral` for sort orders. | `autosubmit` submits its form on change. |
+| | `FilterChip` | A checkbox or radio as a chip, with an icon and a count; checked shows a check mark. | — (pure CSS, `:has(:checked)`) |
+| | `SearchField` | Capsule search with an icon, a clear button and a `shortcut` key hint. | ✕ and Escape clear (and fire `input`); the shortcut key focuses it. |
+| | `ActiveFilters` | The filters in force: link chips (server-rendered lists) or button chips, and Clear all. | `rw:remove` { name, value, chip }, `rw:clear` (cancelable; the chip removes itself). |
+| People | `Avatar` | Picture, or initials on one of eight low-chroma tints (`data-hue` from the name, `data-size` xs–2xl). | A picture that fails to load turns into the initials. `avatarHue()`, `initials()`. |
+| | `UserChip` | Avatar + @handle, linked. | — |
+| Social | `ReactionBar` | Emoji pills with counts and a picker (a Popover). With `action`, a POST form (one submit button per emoji). | Optimistic toggle; `rw:react` { emoji, mine, count, previous }. `setReaction()`. |
+| | `LikeButton` | A heart and a count (`aria-pressed`); `plain` for rows. With `action`, a POST form (value 1 / 0). | Optimistic toggle; `rw:like` { liked, count, previous }. `setLike()`. |
+| | `Comment` | Avatar, name/@handle, badge, relative `<time>` linking to the comment, body (`text` keeps line breaks), `actions` and `replies` slots, deleted state, a `:target` flash. | Relative times refreshed against the reader's clock every minute (`initRelativeTimes`). |
+| | `Composer` | A comment form whose field grows with its text (16rem max), hint, counter near `maxlength`, `context` and `tools` slots. | ⌘↵ / Ctrl+↵ submits (`enter="send"`: Enter does); submit disabled while blank; busy spinner on a native submit. |
+| Downloads | `SplitButton` | The main action (a link, or disabled) joined to a Menu of mirrors with status dots, hints and sizes. | As Menu. |
+| | `CopyField` | Monospace value (one click selects it) and a copy button; `display` shows a short form while the full value is copied. | Clipboard, "Copied" for 2s, a live-region announcement, `rw:copy` { value }. Any `[data-rw-copy]` button works too. |
+| | `StatusDot` | ok / warn / danger / unknown (a hollow ring), with its word or as a labelled dot; `pulse` for a live check. | — |
+| States | `EmptyState` | Icon, title, text, actions; `bordered`, `compact`. | — |
+| | `Skeleton` | Text lines, blocks, circles; sweeps (breathes under reduced motion). | — |
+| | `LoadMore` | A `rel="next"` link plus a polite status line. | Fetches the next page, appends the same list's items in place, takes that page's next link and status; `auto` loads on scroll; `rw:loaded` { added, next }, `rw:loaderror`. |
+| Layout | `.rw-table` | On a real `<table>` in `.rw-table-wrap`: filled head, hairline rows, `th[aria-sort]` + `.rw-table__sort`, `.is-num`, `.is-actions`, `<small>` second lines; `--compact`, `--stack` (cards under 40rem, cells show `data-label`), `--sticky` (under `--site-head`, with `.rw-table-wrap--open`). | — |
+| | `PageHead` | Eyebrow in the accent, title, lead, a row for chips or actions. | — |
+| | `Disclosure` | A real `<details>` (accordion with `name`, `meta`, `plain` rows), animated open where the browser sizes to auto. | — |
+| | `Callout` | A note in the accent (info) or a status tone, with its icon and a title. | — |
+| Icons | `Icon` / `@robyrew/ui/icons` | See below. | — |
+
+Every component takes `class`; text it generates comes from props or a
+`labels` prop, so a page in Spanish, Catalan or Romanian can name it.
+
+**Forms first.** Reactions, likes, filters, the composer and load-more are
+real forms and links, so a page with no script still posts and navigates.
+With script, a listener that calls `preventDefault()` on `rw:react` /
+`rw:like` takes the request over (sends it with `fetch`, then corrects the
+count with `setReaction()` / `setLike()`); without a listener the form posts.
+
+**Opaque overlays.** Menus, popovers and pickers are the panel colour, never
+glass: in WebKit a top-layer dialog with a `backdrop-filter` showed the page's
+text through it unblurred, and a menu is content to act on rather than chrome.
+
+### Tokens added in 0.5
+
+| Token | |
+| --- | --- |
+| `--rw-av-0` … `--rw-av-7`, `--rw-av-ink` | Avatar tints, per theme: eight hues 45° apart at OKLCH chroma ≈ .04 — the one place a hue other than the accent appears, kept low so the accent stays the only strong one. |
+| `--rw-e4` | Overlay elevation (menus, popovers). |
+| `--g-emoji` | Colour-emoji font stack, for reactions. |
+| `--site-max`, `--gutter`, `--site-head` | Page frame: 96rem, 1rem (1.5rem from 40rem), and the header-height estimate SiteHeader replaces with its measurement. An app's own `:root` values win. |
+
+`npm run check` measures the new pairs too: initials on every tint, status
+dots against the panel and the ground, text and icons on each callout tone,
+the table head, menu hover, soft-accent chips, the search and copy fields,
+and the header's brand mark and theme switch.
+
+### Icons — `@robyrew/ui/icons`
+
+Stroke icons on a 24 grid at stroke-width 1.8, in `currentColor`: chat-converter's
+59 (same names, same paths) plus 26 the kit needs — 85 in all — and five
+monochrome platform marks drawn for this set: `windows`, `apple`, `linux`,
+`android`, `store`.
+
+```astro
+<Icon name="download" size={18} />                <!-- decorative: aria-hidden -->
+<Icon name="apple" label="macOS" />               <!-- role="img" with a name -->
+```
+
+```js
+import { icon, iconSvg, ICON_PATHS, PLATFORM_MARKS } from '@robyrew/ui/icons';
+button.append(icon('copy', { size: 16 }));        // an SVGSVGElement
+html += iconSvg('search');                        // a string, for templates
+```
+
 ## Real refraction (opt-in, Chromium only)
 
 `backdrop-filter` can only blur. Bending the backdrop — what makes Apple's glass
@@ -320,8 +437,10 @@ subtle enough that it is not worth the threefold filter cost.
 
 `preview/` is a small Astro site (not published with the package) that renders
 every component and control in both themes side by side, live demos of every
-behaviour, an environment readout (pointer, hover, reduced motion, contrast…)
-and a page of device-sized frames (watch, phone, iPad):
+behaviour, an environment readout (pointer, hover, reduced motion, contrast…),
+a page of device-sized frames (watch, phone, iPad), and under `/kit/` a page
+per app-kit component (both themes, an event log of every `rw:*` event) plus
+an archive demo that puts them together:
 
 ```bash
 cd preview && npm install && npm run dev        # http://localhost:4410

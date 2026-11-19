@@ -1,0 +1,119 @@
+---
+/** The kit put together the way the Spotify versions archive will use it:
+ *  a filter toolbar over a release table with download mirrors, then a
+ *  release with its checksum, reactions and comments. Sample data only. */
+import Kit from '../../layouts/Kit.astro';
+import SearchField from '@robyrew/ui/components/SearchField.astro';
+import ChipSelect from '@robyrew/ui/components/ChipSelect.astro';
+import FilterChip from '@robyrew/ui/components/FilterChip.astro';
+import ActiveFilters from '@robyrew/ui/components/ActiveFilters.astro';
+import LoadMore from '@robyrew/ui/components/LoadMore.astro';
+import SplitButton from '@robyrew/ui/components/SplitButton.astro';
+import CopyField from '@robyrew/ui/components/CopyField.astro';
+import StatusDot from '@robyrew/ui/components/StatusDot.astro';
+import ReactionBar from '@robyrew/ui/components/ReactionBar.astro';
+import LikeButton from '@robyrew/ui/components/LikeButton.astro';
+import Comment from '@robyrew/ui/components/Comment.astro';
+import Composer from '@robyrew/ui/components/Composer.astro';
+import Callout from '@robyrew/ui/components/Callout.astro';
+import Disclosure from '@robyrew/ui/components/Disclosure.astro';
+import EmptyState from '@robyrew/ui/components/EmptyState.astro';
+import UserChip from '@robyrew/ui/components/UserChip.astro';
+import Icon from '@robyrew/ui/components/Icon.astro';
+import ReleaseRows from '../../components/ReleaseRows.astro';
+import { releases } from '../../lib/releases';
+const now = Date.now();
+const ago = (min: number) => new Date(now - min * 60_000).toISOString();
+---
+<Kit title="Archive demo" lead="The kit composed the way the Spotify versions archive will use it. Sample data; nothing is fetched or sent.">
+  <section class="pv-section" aria-label="Library">
+    <form class="pv-toolbar" role="search" action="#" data-pv-nosubmit>
+      <SearchField label="Search versions" placeholder="Search 1,284 versions" shortcut="/" />
+      <div class="rw-filters">
+        <ChipSelect label="Platform" name="platform" icon="monitor" options={[['', 'All platforms'], ['win', 'Windows'], ['mac', 'macOS'], ['linux', 'Linux'], ['android', 'Android']]} value="win" />
+        <ChipSelect label="Architecture" name="arch" icon="cpu" options={[['', 'Any architecture'], ['x64', 'x64'], ['arm64', 'arm64']]} />
+        <ChipSelect label="Year" name="year" icon="calendar" options={[['', 'Any year'], ['2026', '2026'], ['2025', '2025']]} />
+        <FilterChip label="Has archive copy" name="archived" icon="archive" checked />
+        <FilterChip label="Liked" name="liked" icon="heart" />
+        <ChipSelect label="Sort" name="sort" icon="sort" options={[['new', 'Newest first'], ['old', 'Oldest first'], ['liked', 'Most liked']]} neutral />
+      </div>
+      <ActiveFilters filters={[{ label: 'Windows', name: 'platform', value: 'win' }, { label: 'Has archive copy', name: 'archived', value: '1' }]} />
+    </form>
+    <div class="rw-table-wrap">
+      <table class="rw-table rw-table--stack" id="pv-lm-table">
+        <caption class="rw-sr-only">Spotify releases</caption>
+        <thead>
+          <tr>
+            <th scope="col" aria-sort="descending"><a class="rw-table__sort" href="#">Version<Icon name="chevronDown" size={14} /></a></th>
+            <th scope="col">Platform</th>
+            <th scope="col">Released</th>
+            <th scope="col">Sources</th>
+            <th scope="col" class="is-num">Likes</th>
+            <th scope="col" class="is-actions"><span class="rw-sr-only">Download</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <ReleaseRows rows={releases(8)} prefix="pv-ar" />
+        </tbody>
+      </table>
+    </div>
+    <LoadMore id="pv-lm" href="/kit/load-more/2/" target="#pv-lm-table tbody" status="8 of 30" />
+  </section>
+
+  <section class="pv-section" aria-labelledby="pv-rel">
+    <h2 id="pv-rel">Spotify 1.2.52.400 · Windows x64</h2>
+    <div class="pv-release">
+      <div class="pv-demo">
+        <div class="rw-card pv-card">
+          <div class="rw-actions">
+            <SplitButton id="pv-rel-dl" label="Download" icon="windows" href="#" size="lg" mainLabel="Download Spotify 1.2.52.400 for Windows x64" menuTitle="Download from" items={[
+              { label: 'Spotify CDN', href: '#', status: 'ok', hint: 'Official · checked 4 min ago', tail: '98.4 MB' },
+              { label: 'RobyRew archive', href: '#', status: 'ok', hint: 'R2 copy, same SHA-256', tail: '98.4 MB' },
+              { label: 'LoadSpot (amd64fox)', href: '#', status: 'warn', hint: 'Slow responses today', external: true },
+            ]} />
+            <LikeButton count={248} liked label="Like this build" />
+          </div>
+          <CopyField label="SHA-256" value="9f2c6d1e0b7a4c3f8e5d2a1b0c9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3ce41a" truncate />
+          <div class="pv-dots">
+            <StatusDot status="ok" label="Spotify CDN" />
+            <StatusDot status="ok" label="Archive" />
+            <StatusDot status="warn" label="LoadSpot" />
+          </div>
+          <ReactionBar id="pv-rel-react" reactions={[{ emoji: '👍', count: 31, mine: true }, { emoji: '🐛', count: 4 }, { emoji: '🎉', count: 2 }]} />
+          <p class="pv-note">Captured by <UserChip handle="robyrew" href="#" size="xs" /> on 2026-11-17.</p>
+        </div>
+        <Callout tone="warn" title="Mirror is slow">LoadSpot answered in 9 s at the last check; the archive copy is the same file.</Callout>
+        <Disclosure title="Changelog" meta="from Spotify" icon="fileText">
+          <p>Fixed playback on some Bluetooth devices. Smaller update download.</p>
+        </Disclosure>
+      </div>
+      <div class="pv-demo">
+        <h3>Comments</h3>
+        <ol class="rw-comments">
+          <Comment as="li" id="pv-c1" handle="saerun" datetime={ago(42)} profileHref="#" text="Works on Windows 11 24H2. The archive copy downloaded in seconds.">
+            <Fragment slot="actions">
+              <LikeButton count={5} plain />
+              <button class="rw-comment__action" type="button"><Icon name="reply" size={15} />Reply</button>
+            </Fragment>
+          </Comment>
+          <Comment as="li" id="pv-c2" handle="robyrew" badge="Author" datetime={ago(60 * 5)} profileHref="#" text="Captured from the official CDN; the hash is above.">
+            <Fragment slot="actions">
+              <LikeButton count={2} plain liked />
+            </Fragment>
+          </Comment>
+        </ol>
+        <Composer id="pv-rel-compose" label="Write a comment" placeholder="Did this build work for you?" hint="⌘↵ to post" maxlength={2000} />
+        <EmptyState title="No problems reported" icon="checkCircle" compact bordered>
+          Reports from the "Report a problem" menu would be listed here.
+        </EmptyState>
+      </div>
+    </div>
+  </section>
+</Kit>
+
+<script>
+  document.addEventListener('submit', (e) => {
+    const f = e.target as Element;
+    if (f.matches('[data-pv-nosubmit], .rw-composer')) e.preventDefault();
+  });
+</script>

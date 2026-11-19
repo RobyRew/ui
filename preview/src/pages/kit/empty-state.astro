@@ -1,0 +1,25 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import EmptyState from '@robyrew/ui/components/EmptyState.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="empty-state" title="EmptyState" lead="What a list says when there is nothing in it: an icon, a title, a line of text, and the action that fills it.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="EmptyState">
+        <EmptyState title="No versions match" icon="search" bordered>
+          Nothing for Linux arm64 in 2024. Try another year, or clear the filters.
+          <Fragment slot="actions">
+            <a class="rw-btn" href="#">Clear filters</a>
+          </Fragment>
+        </EmptyState>
+        <div class="pv-surface">
+          <EmptyState title="No comments yet" icon="message" compact>
+            Be the first to say whether this build works for you.
+          </EmptyState>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

@@ -1,0 +1,31 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import StatusDot from '@robyrew/ui/components/StatusDot.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="status-dot" title="StatusDot" lead="ok, warn, danger, unknown — never the only cue: the word goes beside the dot, or becomes its accessible name and tooltip. Unknown is a hollow ring, so it differs from the others without its colour. pulse marks a live check (none under reduced motion).">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="StatusDot">
+        <div class="pv-stack">
+          <StatusDot status="ok" />
+          <StatusDot status="warn" />
+          <StatusDot status="danger" />
+          <StatusDot status="unknown" />
+          <StatusDot status="ok" label="Checked 4 min ago" pulse />
+        </div>
+        <h3 class="pv-h">Dots alone (labelled, with tooltips)</h3>
+        <div class="pv-surface">
+          <div class="pv-swatch-row">
+            <StatusDot status="ok" hideLabel label="Spotify CDN: available" />
+            <StatusDot status="ok" hideLabel label="Archive: available" />
+            <StatusDot status="warn" hideLabel label="LoadSpot: slow" />
+            <StatusDot status="danger" hideLabel label="Old path: down" />
+            <StatusDot status="unknown" hideLabel />
+          </div>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

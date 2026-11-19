@@ -1,0 +1,35 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import FilterChip from '@robyrew/ui/components/FilterChip.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="filter-chip" title="FilterChip" lead="A checkbox (or a radio) that looks like a chip. The input covers the chip, so it keeps its focus ring, Space to toggle, and its place in a form; the chip reads :checked through :has(). Checked adds a check mark, so the state is not carried by the tint alone.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="FilterChip">
+        <h3 class="pv-h">Checkboxes, with icons and counts</h3>
+        <div class="rw-filters rw-filters--wrap">
+          <FilterChip label="Windows" name={`p-${t}`} value="win" icon="windows" count={312} checked />
+          <FilterChip label="macOS" name={`p-${t}`} value="mac" icon="apple" count={208} />
+          <FilterChip label="Linux" name={`p-${t}`} value="linux" icon="linux" count={96} />
+          <FilterChip label="Android" name={`p-${t}`} value="android" icon="android" count={1284} />
+          <FilterChip label="Store" name={`p-${t}`} value="store" icon="store" disabled />
+        </div>
+        <h3 class="pv-h">Radios: one of many</h3>
+        <div class="rw-filters rw-filters--wrap" role="radiogroup" aria-label="Channel">
+          <FilterChip type="radio" label="Stable" name={`ch-${t}`} value="stable" checked />
+          <FilterChip type="radio" label="Beta" name={`ch-${t}`} value="beta" />
+          <FilterChip type="radio" label="Any" name={`ch-${t}`} value="" />
+        </div>
+        <h3 class="pv-h">In a card</h3>
+        <div class="pv-surface">
+          <div class="rw-filters rw-filters--wrap">
+            <FilterChip label="Has archive copy" name={`a-${t}`} icon="archive" checked />
+            <FilterChip label="Liked" name={`l-${t}`} icon="heart" />
+          </div>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

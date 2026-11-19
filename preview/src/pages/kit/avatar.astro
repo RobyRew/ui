@@ -1,0 +1,39 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Avatar from '@robyrew/ui/components/Avatar.astro';
+import { THEMES } from '../../lib/kit';
+import { avatarHue } from '@robyrew/ui/behaviors.js';
+import { artDusk, artSea } from '../../lib/art';
+const people = ['robyrew', 'gcalin_dtag', 'saerun', 'bmontsen', 'Ada Lovelace', 'Grace Hopper', 'linus', 'Margaret H.'];
+const sizes = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
+---
+<Kit slug="avatar" title="Avatar" lead="A picture, or the initials on one of eight low-chroma tints. The tint comes from the name (avatarHue), so a person keeps one colour on every page; the size is data-size. Both are attributes, never an inline style. A picture that fails to load turns into the initials.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="Avatar">
+        <h3 class="pv-h">Initials: the eight tints</h3>
+        <div class="pv-swatch-row">
+          {people.map((p) => <Avatar name={p} size="lg" />)}
+        </div>
+        <p class="pv-note pv-mono">{people.map((p) => `${p}→${avatarHue(p)}`).join('  ')}</p>
+        <h3 class="pv-h">Sizes</h3>
+        <div class="pv-swatch-row">
+          {sizes.map((s) => <Avatar name="Cosmin Calin" size={s} />)}
+        </div>
+        <h3 class="pv-h">Pictures, a broken one, no name</h3>
+        <div class="pv-swatch-row">
+          <Avatar name="Dusk" src={artDusk} size="lg" />
+          <Avatar name="Sea" src={artSea} size="lg" />
+          <Avatar name="Broken picture" src="/no-such-avatar.png" size="lg" />
+          <Avatar size="lg" />
+        </div>
+        <h3 class="pv-h">A pile</h3>
+        <div class="pv-swatch-row">
+          <span class="rw-avatars">{people.slice(0, 5).map((p) => <Avatar name={p} size="sm" />)}</span>
+          <span class="rw-hint">and 12 others liked this</span>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

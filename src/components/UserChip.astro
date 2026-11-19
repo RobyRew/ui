@@ -1,0 +1,25 @@
+---
+/** UserChip — a person as an avatar and an @handle, linked to their profile
+ *  when `href` is given. With `showName`, the name leads and the handle
+ *  follows, quieter. The handle is shown as given (with an @ added): the app
+ *  decides what a person without one is called (RobyRew ID: user-<id>). */
+import Avatar from './Avatar.astro';
+
+interface Props {
+  handle: string;
+  name?: string;
+  src?: string | null;
+  href?: string;
+  size?: 'xs' | 'sm' | 'md';
+  showName?: boolean;
+  class?: string;
+}
+const { handle, name, src, href, size = 'sm', showName = false, class: cls } = Astro.props;
+const at = handle.startsWith('@') ? handle : `@${handle}`;
+const Tag = href ? 'a' : 'span';
+---
+<Tag class:list={['rw-userchip', cls]} href={href}>
+  <Avatar name={name || handle} src={src} size={size} />
+  {showName && name && <span class="rw-userchip__name">{name}</span>}
+  <span class="rw-userchip__handle">{at}</span>
+</Tag>

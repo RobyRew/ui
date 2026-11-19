@@ -1,0 +1,110 @@
+---
+/** A kit preview page: SiteHeader at the top (the component itself, live),
+ *  a PageHead, the page's specimens, links to the previous and next page,
+ *  and an event log that prints every rw:* event the page dispatches. */
+import Preview from './Preview.astro';
+import SiteHeader from '@robyrew/ui/components/SiteHeader.astro';
+import PageHead from '@robyrew/ui/components/PageHead.astro';
+import Menu from '@robyrew/ui/components/Menu.astro';
+import Avatar from '@robyrew/ui/components/Avatar.astro';
+import { ALL } from '../lib/kit';
+import pkg from '@robyrew/ui/package.json';
+
+interface Props {
+  title: string;
+  lead?: string;
+  slug?: string;
+  /** Show the rw:* event log. Default true. */
+  log?: boolean;
+}
+const { title, lead, slug, log = true } = Astro.props;
+const at = slug ? ALL.findIndex((p) => p.slug === slug) : -1;
+const prev = at > 0 ? ALL[at - 1] : undefined;
+const next = at >= 0 && at < ALL.length - 1 ? ALL[at + 1] : undefined;
+const path = Astro.url.pathname;
+---
+<Preview title={`${title} — @robyrew/ui ${pkg.version}`}>
+  <SiteHeader
+    name="rw/ui"
+    sub={pkg.version}
+    mark="layers"
+    links={[
+      { label: 'Gallery', href: '/' },
+      { label: 'Kit', href: '/kit/', current: path === '/kit/' || (!!slug && path !== '/kit/archive/') },
+      { label: 'Archive demo', href: '/kit/archive/', current: path === '/kit/archive/' },
+      { label: 'Devices', href: '/devices' },
+    ]}
+    actions={[{ label: 'Source', href: 'https://github.com/RobyRew/ui', icon: 'code' }]}
+  >
+    <Fragment slot="account">
+      <button class="rw-site-avatar" type="button" commandfor="pv-account" command="show-modal" aria-haspopup="menu" aria-expanded="false" aria-controls="pv-account" aria-label="Account">
+        <Avatar name="Cosmin Calin" size="sm" />
+      </button>
+      <Menu
+        id="pv-account"
+        label="Account"
+        items={[
+          { heading: '@robyrew' },
+          { label: 'Profile', href: '#', icon: 'userCircle' },
+          { label: 'Settings', href: '#', icon: 'sliders', hint: 'At id.robyrew.com' },
+          'separator',
+          { label: 'Sign out', icon: 'logOut', danger: true, value: 'sign-out' },
+        ]}
+      />
+    </Fragment>
+  </SiteHeader>
+
+  <main class="pv-wrap pv-kit">
+    <PageHead eyebrow={slug ? 'App kit' : `@robyrew/ui ${pkg.version}`} title={title} lead={lead}>
+      <slot name="meta" />
+    </PageHead>
+    <slot />
+    {log && (
+      <section class="pv-section" aria-label="Events">
+        <h2>Events</h2>
+        <p>Every <code>rw:*</code> event this page dispatches, newest first.</p>
+        <ol class="pv-log" data-pv-log><li class="pv-log__empty">Nothing yet.</li></ol>
+      </section>
+    )}
+    {(prev || next) && (
+      <nav class="pv-pager" aria-label="Kit pages">
+        {prev ? <a class="rw-btn" href={`/kit/${prev.slug}/`}>← {prev.name}</a> : <span></span>}
+        {next && <a class="rw-btn" href={`/kit/${next.slug}/`}>{next.name} →</a>}
+      </nav>
+    )}
+  </main>
+</Preview>
+
+<script>
+  const EVENTS = ['rw:select', 'rw:change', 'rw:react', 'rw:like', 'rw:remove', 'rw:clear', 'rw:copy', 'rw:loaded', 'rw:loaderror', 'rw:themechange'];
+  const fmt = (d: unknown): string => {
+    try {
+      return JSON.stringify(d, (k, v) => (v instanceof Element ? `<${v.tagName.toLowerCase()}${v.id ? `#${v.id}` : ''}>` : Array.isArray(v) && v.every((x) => x instanceof Element) ? `${v.length} elements` : v));
+    } catch {
+      return String(d);
+    }
+  };
+  for (const name of EVENTS) {
+    document.addEventListener(name, (e) => {
+      const list = document.querySelector('[data-pv-log]');
+      if (!list) return;
+      list.querySelector('.pv-log__empty')?.remove();
+      const li = document.createElement('li');
+      const b = document.createElement('b');
+      b.textContent = name;
+      const code = document.createElement('code');
+      code.textContent = fmt((e as CustomEvent).detail);
+      li.append(b, ' ', code);
+      list.prepend(li);
+      while (list.children.length > 12) list.lastElementChild?.remove();
+    });
+  }
+  // A demo of a page that persists reactions and likes itself: inside
+  // [data-pv-takeover] the preview calls preventDefault, as an app would before
+  // sending the change with fetch. Elsewhere a form bar would post natively.
+  for (const name of ['rw:react', 'rw:like']) {
+    document.addEventListener(name, (e) => {
+      if ((e.target as Element).closest('[data-pv-takeover]')) e.preventDefault();
+    });
+  }
+</script>

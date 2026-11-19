@@ -146,10 +146,56 @@ function check(name, t) {
   ui('focus ring (accent) vs panel', accent, panel);
   ui('focus ring (accent) vs glass', accent, gGround);
 
+  /* App kit (0.5). */
+  // Avatar initials on every tint.
+  for (let i = 0; i < 8; i++) text(`av-ink on avatar tint --rw-av-${i}`, c('--rw-av-ink'), c(`--rw-av-${i}`));
+  // Status dots are graphics: 3:1 on the surfaces they sit on. Unknown is ink-3.
+  for (const [k, label] of [['--rw-ok', 'ok'], ['--rw-warn', 'warn'], ['--rw-danger', 'danger'], ['--ink-3', 'unknown']]) {
+    ui(`status dot ${label} vs panel`, c(k), panel);
+    ui(`status dot ${label} vs ground`, c(k), ground);
+  }
+  // Callouts: the tone at 8% over the panel, opaque.
+  for (const [k, label] of [['--accent', 'info'], ['--rw-ok', 'ok'], ['--rw-warn', 'warn'], ['--rw-danger', 'danger']]) {
+    const bg = over(withAlpha(c(k), 0.08), panel);
+    text(`ink on a ${label} callout`, ink, bg);
+    text(`ink-2 on a ${label} callout`, c('--ink-2'), bg);
+    ui(`${label} icon on its callout`, c(k), bg);
+  }
+  // Tables: the head is the fill over the panel; rows tint with it under a pointer.
+  const tableHead = over(c('--rw-fill'), panel);
+  text('ink-2 on the table head', c('--ink-2'), tableHead);
+  text('ink-3 on a hovered table row', c('--ink-3'), tableHead);
+  // Menus: hover and keyboard focus are the fill over the panel.
+  const menuHover = over(c('--rw-fill'), panel);
+  text('ink on a menu item (hover)', ink, menuHover);
+  text('ink-3 on a menu item hint (hover)', c('--ink-3'), menuHover);
+  text('danger on a menu item (hover)', c('--rw-danger'), menuHover);
+  // Soft accent states (a set ChipSelect, a checked FilterChip, the reader's
+  // own reaction or like) and the kit's fields (search, copy field) lay their
+  // fill over the panel, not over whatever is behind them: on the light ground
+  // alone the accent measured 4.1:1 and a placeholder 4.3:1.
+  text('accent on a soft-accent chip (over panel)', accent, over(c('--accent-soft'), panel));
+  text('ink-3 on a search or copy field (over panel)', c('--ink-3'), over(c('--rw-fill'), panel));
+  text('ink on a copy field (fill over panel)', ink, over(c('--rw-fill'), panel));
+  // Active filter chips: fill-2 over the ground.
+  text('ink on an active filter chip', ink, over(c('--rw-fill-2'), ground));
+  // SiteHeader: the brand mark's icon on both ends of its gradient, and the
+  // theme switch's icons on glass (graphics, 3:1).
+  const white = { r: 255, g: 255, b: 255, a: 1 };
+  const black = { r: 0, g: 0, b: 0, a: 1 };
+  ui('on-accent on the brand mark (light end)', c('--on-accent'), mixOklab(accent, white, 0.82));
+  ui('on-accent on the brand mark (dark end)', c('--on-accent'), mixOklab(accent, black, 0.7));
+  const glassWell = over(c('--g-fill'), gGround);
+  ui('theme icon (g-ink-mute) on the switch well', c('--g-ink-mute'), glassWell);
+  ui('theme icon (g-ink) on the switch thumb', c('--g-ink'), over(c('--rw-thumb'), glassWell));
+  text('g-ink-dim on a glass menu link', c('--g-ink-dim'), gPanel);
+
   info('hairline vs panel', c('--hair'), panel);
   info('switch track (off) vs panel', over(c('--rw-fill-3'), panel), panel);
   info('segment thumb vs well', thumb, well);
   info('glass over ground vs ground', gGround, ground);
+  info('skeleton (fill-2) vs panel', over(c('--rw-fill-2'), panel), panel);
+  info('avatar tint 0 vs panel', c('--rw-av-0'), panel);
 
   let failed = 0;
   console.log(`\n${name}`);

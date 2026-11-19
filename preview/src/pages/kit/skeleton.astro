@@ -1,0 +1,27 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Skeleton from '@robyrew/ui/components/Skeleton.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="skeleton" title="Skeleton" lead="Placeholder shapes while content loads: text lines that end short, blocks, circles. They sweep; under reduced motion they breathe in place. They are aria-hidden — the region they stand in for carries aria-busy, and a label can announce Loading once.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="Skeleton">
+        <div class="pv-surface" aria-busy="true">
+          <div class="pv-skel-row">
+            <Skeleton shape="circle" />
+            <div><Skeleton width={40} /><Skeleton lines={3} label="Loading comments" /></div>
+          </div>
+        </div>
+        <div class="pv-surface">
+          <Skeleton shape="block" height="sm" />
+          <Skeleton shape="block" />
+          <div class="pv-swatch-row">
+            <Skeleton shape="circle" size="xs" /><Skeleton shape="circle" size="sm" /><Skeleton shape="circle" size="lg" /><Skeleton shape="circle" size="xl" />
+          </div>
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

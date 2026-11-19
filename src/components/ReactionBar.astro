@@ -1,0 +1,121 @@
+---
+/** ReactionBar — emoji reactions with counts, and a picker for adding one
+ *  (from ChatForge's message reactions and quick-reaction row).
+ *
+ *  A press flips the reader's own reaction at once and dispatches `rw:react`
+ *  on the bar (detail { emoji, mine, count, previous }); setReaction() puts
+ *  the server's numbers back if they differ. With `action` the bar is a
+ *  <form method="post">: every pill and picker emoji is a submit button
+ *  (name=`name`, value=the emoji), so it works with no script, and it posts
+ *  natively unless a `rw:react` listener calls preventDefault to send it
+ *  itself.
+ *
+ *  Emoji are colour emoji (--g-emoji), never .rw-gl glyphs.
+ */
+import './Social.css';
+import './Popover.css';
+import Icon from './Icon.astro';
+import { uid } from '../behaviors/core.js';
+import { formatCount } from '../behaviors/format.js';
+import type { Reaction } from '../index';
+
+interface Props {
+  reactions?: Reaction[];
+  /** The picker's emoji. Default 👍 ❤️ 😂 😮 😢 🎉. */
+  quick?: string[];
+  /** POST target: makes the bar a form. */
+  action?: string;
+  /** The form field the emoji is sent as. Default "emoji". */
+  name?: string;
+  /** Hidden fields for the form (a release id, a CSRF token). */
+  fields?: Record<string, string>;
+  /** Show the add button and picker. Default true. */
+  picker?: boolean;
+  /** Counts only: nothing can be pressed. */
+  readonly?: boolean;
+  id?: string;
+  locale?: string;
+  labels?: { group?: string; add?: string; picker?: string; react?: string };
+  class?: string;
+}
+const {
+  reactions = [],
+  quick = ['👍', '❤️', '😂', '😮', '😢', '🎉'],
+  action,
+  name = 'emoji',
+  fields = {},
+  picker = true,
+  readonly = false,
+  id = uid('rw-react'),
+  locale,
+  labels = {},
+  class: cls,
+} = Astro.props;
+const shown = reactions.filter((r) => r.count > 0);
+const Tag = action ? 'form' : 'div';
+const type = action ? 'submit' : 'button';
+const pickerId = `${id}-picker`;
+const withPicker = picker && !readonly;
+const add = labels.add ?? 'Add a reaction';
+---
+<Tag
+  class:list={['rw-react', cls]}
+  id={id}
+  method={action ? 'post' : undefined}
+  action={action}
+  data-rw-react
+  data-name={name}
+  data-readonly={readonly ? '' : undefined}
+>
+  {action && Object.entries(fields).map(([k, v]) => <input type="hidden" name={k} value={v} />)}
+  <div class="rw-reactions" role="group" aria-label={labels.group ?? 'Reactions'}>
+    {shown.map((r) => (
+      <button
+        type={type}
+        class="rw-reaction"
+        name={name}
+        value={r.emoji}
+        data-emoji={r.emoji}
+        data-count={r.count}
+        aria-pressed={r.mine ? 'true' : 'false'}
+        title={r.label}
+        disabled={readonly}
+      ><span class="rw-reaction__emoji">{r.emoji}</span><span class="rw-reaction__count">{formatCount(r.count, locale)}</span></button>
+    ))}
+    {withPicker && (
+      <button
+        type="button"
+        class="rw-reaction rw-reaction--add"
+        commandfor={pickerId}
+        command="show-modal"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls={pickerId}
+        aria-label={add}
+        title={add}
+      ><Icon name="smilePlus" size={17} /></button>
+    )}
+  </div>
+  {withPicker && (
+    <dialog id={pickerId} class="rw-pop rw-pop--picker" aria-label={labels.picker ?? 'Pick a reaction'} data-width="auto" data-align="start">
+      <div class="rw-pop__inner" tabindex="-1" autofocus>
+        <div class="rw-pop__drag" data-rw-pop-drag><span class="rw-pop__grab" aria-hidden="true"></span></div>
+        <div class="rw-pop__body">
+          <div class="rw-quick" role="group" aria-label={labels.picker ?? 'Pick a reaction'}>
+            {quick.map((e) => (
+              <button type={type} class="rw-quick__btn" name={name} value={e} data-emoji={e} aria-label={`${labels.react ?? 'React with'} ${e}`}>{e}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </dialog>
+  )}
+</Tag>
+
+<script>
+  import { onReady } from '../behaviors/core.js';
+  import { initPopovers } from '../behaviors/popover.js';
+  import { initSocial } from '../behaviors/social.js';
+  onReady(initPopovers);
+  onReady(initSocial);
+</script>

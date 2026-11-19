@@ -359,6 +359,10 @@ select.rw-field:dir(rtl) {
   pointer-events: none;
 }
 .rw-seg:dir(rtl) .rw-seg__thumb { --rw-dir: -1; }
+/* The first placement is a jump, not a slide: behaviors/seg.js holds
+ * .is-instant for two frames after binding, so a selection restored on load
+ * (a stored theme, say) does not sweep across the control on every page. */
+.rw-seg.is-instant .rw-seg__thumb { transition: none; }
 /* Pressing the selected segment squeezes the thumb, as iOS does. */
 .rw-seg:has(.rw-seg__item:is([aria-selected="true"], [aria-checked="true"], .is-active):active) .rw-seg__thumb { scale: .96; }
 .rw-seg__item {
@@ -401,6 +405,14 @@ select.rw-field:dir(rtl) {
   box-shadow: var(--rw-thumb-sh);
 }
 
+/* Icon segments: square items holding one glyph each (the theme switch).
+ * Every item needs an aria-label. */
+.rw-seg--icon {
+  display: inline-grid;
+  grid-auto-columns: calc(var(--rw-ctl-h) - 6px);
+}
+.rw-seg--icon .rw-seg__item { padding: 0; }
+
 /* ── Chip / badge ─────────────────────────────────────────────────
  * A chip is pressable; a badge is a label. They look alike and behave nothing
  * alike, so they are separate classes rather than one with a modifier.
@@ -438,6 +450,36 @@ select.rw-field:dir(rtl) {
   background: var(--accent);
   border-color: transparent;
   color: var(--on-accent);
+}
+/* A chip can wrap a checkbox or a radio (FilterChip). The input covers the
+ * chip, invisible, so the whole chip toggles it while it keeps its own focus,
+ * keyboard and form semantics; the chip reads the state with :has(), so a
+ * filter form works with no script at all. */
+.rw-chip > input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: inherit;
+  opacity: 0;
+  appearance: none;
+  cursor: inherit;
+}
+.rw-chip:has(> input:checked) {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--on-accent);
+}
+.rw-chip:has(> input:disabled) { opacity: .45; cursor: not-allowed; }
+/* A count after the label, on a faint pill of the label's own colour. */
+.rw-chip__count {
+  padding: 0 .3rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  font-size: .6875rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
 }
 .rw-badge {
   display: inline-flex;
@@ -597,18 +639,534 @@ select.rw-field:dir(rtl) {
   animation: rw-spin .8s linear infinite;
 }
 
+/* ════════════════════════════════════════════════════════════════
+ * Content primitives (0.5)
+ *
+ * Classes a page writes in its own markup, like the controls above. The Astro
+ * components that wrap them (Avatar, UserChip, StatusDot, Skeleton,
+ * EmptyState, LoadMore, PageHead, Disclosure, Callout) render exactly these,
+ * so markup built by script looks the same as markup a component rendered,
+ * and none of them needs a stylesheet of its own.
+ * ════════════════════════════════════════════════════════════════ */
+
+/* An icon from @robyrew/ui/icons. Inline in text it sits on the x-height; in a
+ * flex row it keeps its size. */
+.rw-icon { display: inline-block; flex: none; vertical-align: -.2em; }
+
+/* ── Avatar ───────────────────────────────────────────────────────
+ * A picture (<img class="rw-avatar">) or initials on a tint. data-size picks
+ * the diameter; data-hue (0–7) picks the tint, which avatarHue() derives from
+ * the name so a person keeps one colour everywhere. Both are attributes, not
+ * inline styles, so a strict CSP holds.
+ */
+.rw-avatar {
+  --rw-av-size: 2rem;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--rw-av-size);
+  height: var(--rw-av-size);
+  border-radius: 50%;
+  overflow: hidden;
+  object-fit: cover;
+  background: var(--rw-fill-3);
+  color: var(--ink-2);
+  font-size: calc(var(--rw-av-size) * .38);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .01em;
+  vertical-align: middle;
+  user-select: none;
+  /* A hairline drawn over the picture, so a white photo keeps its edge on a
+   * white panel. An inset shadow would sit under the image. */
+  outline: 1px solid color-mix(in srgb, var(--ink) 9%, transparent);
+  outline-offset: -1px;
+}
+.rw-avatar[data-size="xs"] { --rw-av-size: 1.25rem; }
+.rw-avatar[data-size="sm"] { --rw-av-size: 1.5rem; }
+.rw-avatar[data-size="lg"] { --rw-av-size: 2.5rem; }
+.rw-avatar[data-size="xl"] { --rw-av-size: 3.5rem; }
+.rw-avatar[data-size="2xl"] { --rw-av-size: 5rem; }
+.rw-avatar[data-hue] { color: var(--rw-av-ink); }
+.rw-avatar[data-hue="0"] { background: var(--rw-av-0); }
+.rw-avatar[data-hue="1"] { background: var(--rw-av-1); }
+.rw-avatar[data-hue="2"] { background: var(--rw-av-2); }
+.rw-avatar[data-hue="3"] { background: var(--rw-av-3); }
+.rw-avatar[data-hue="4"] { background: var(--rw-av-4); }
+.rw-avatar[data-hue="5"] { background: var(--rw-av-5); }
+.rw-avatar[data-hue="6"] { background: var(--rw-av-6); }
+.rw-avatar[data-hue="7"] { background: var(--rw-av-7); }
+.rw-avatar > .rw-icon { width: 62%; height: 62%; }
+/* A pile ("liked by"): each one overlaps the last, ringed in the panel. */
+.rw-avatars { display: inline-flex; align-items: center; }
+.rw-avatars > .rw-avatar + .rw-avatar {
+  margin-inline-start: calc(var(--rw-av-size) * -.28);
+  box-shadow: 0 0 0 2px var(--panel);
+}
+
+/* A person as a link: avatar plus @handle. */
+.rw-userchip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: .125rem .5rem .125rem .125rem;
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: .875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--rw-dur-1) var(--rw-ease);
+}
+@media (hover: hover) {
+  a.rw-userchip:hover { background: var(--rw-fill); }
+}
+a.rw-userchip:active { background: var(--rw-fill-2); }
+.rw-userchip__name,
+.rw-userchip__handle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rw-userchip__name + .rw-userchip__handle { color: var(--ink-3); font-weight: 500; }
+
+/* ── Status dot ───────────────────────────────────────────────────
+ * ok / warn / danger / unknown. A dot is never the only cue: give it a label
+ * (.rw-status wraps one) or role="img" with an aria-label. Unknown is a hollow
+ * ring, so it still differs from the others without its colour.
+ */
+.rw-dot {
+  --rw-dot: var(--ink-3);
+  display: inline-block;
+  flex: none;
+  width: .5rem;
+  height: .5rem;
+  border-radius: 50%;
+  background: var(--rw-dot);
+  box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--rw-dot) 20%, transparent);
+  vertical-align: middle;
+}
+.rw-dot[data-status="ok"] { --rw-dot: var(--rw-ok); }
+.rw-dot[data-status="warn"] { --rw-dot: var(--rw-warn); }
+.rw-dot[data-status="danger"] { --rw-dot: var(--rw-danger); }
+.rw-dot[data-status="unknown"] { background: transparent; box-shadow: inset 0 0 0 1.5px var(--rw-dot); }
+/* A live check: a ring that widens and fades. Gone under reduced motion. */
+.rw-dot[data-pulse] { animation: rw-dot-pulse 2s var(--rw-ease-out) infinite; }
+@keyframes rw-dot-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--rw-dot) 45%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--rw-dot) 0%, transparent); }
+}
+.rw-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  color: var(--ink-2);
+  font-size: .8125rem;
+  line-height: 1.2;
+}
+
+/* ── Skeleton ─────────────────────────────────────────────────────
+ * Placeholder shapes while content loads. data-shape: text (default) / block
+ * / circle; data-w: 25, 40, 50, 60, 75, 80 or 100 (% width); data-h: sm, md
+ * or lg for blocks; data-size for circles (the avatar sizes). Skeletons are
+ * aria-hidden: put aria-busy="true" on the region they stand in for.
+ */
+.rw-skeleton {
+  --rw-av-size: 2rem;
+  display: block;
+  height: .75em;
+  margin-block: .35em;
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg, var(--rw-fill-2) 0 30%, var(--rw-fill-3) 50%, var(--rw-fill-2) 70% 100%)
+    0 0 / 300% 100%;
+  animation: rw-shimmer 1.6s linear infinite;
+}
+.rw-skeleton[data-shape="block"] { height: 6rem; margin-block: 0; border-radius: var(--rw-r-ctl-lg); }
+.rw-skeleton[data-shape="block"][data-h="sm"] { height: 3rem; }
+.rw-skeleton[data-shape="block"][data-h="lg"] { height: 10rem; }
+.rw-skeleton[data-shape="circle"] {
+  width: var(--rw-av-size);
+  height: var(--rw-av-size);
+  margin-block: 0;
+  border-radius: 50%;
+}
+.rw-skeleton[data-size="xs"] { --rw-av-size: 1.25rem; }
+.rw-skeleton[data-size="sm"] { --rw-av-size: 1.5rem; }
+.rw-skeleton[data-size="lg"] { --rw-av-size: 2.5rem; }
+.rw-skeleton[data-size="xl"] { --rw-av-size: 3.5rem; }
+.rw-skeleton[data-w="25"] { width: 25%; }
+.rw-skeleton[data-w="40"] { width: 40%; }
+.rw-skeleton[data-w="50"] { width: 50%; }
+.rw-skeleton[data-w="60"] { width: 60%; }
+.rw-skeleton[data-w="75"] { width: 75%; }
+.rw-skeleton[data-w="80"] { width: 80%; }
+.rw-skeleton[data-w="100"] { width: 100%; }
+/* A paragraph of lines ends on a short one. */
+.rw-skeleton-lines > .rw-skeleton:last-child:not([data-w]):not(:only-child) { width: 60%; }
+@keyframes rw-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+/* ── Empty state ──────────────────────────────────────────────────
+ * What a list says when it has nothing in it: an icon, a title, a line of
+ * text, and the action that fills it.
+ */
+.rw-empty {
+  display: grid;
+  justify-items: center;
+  gap: .5rem;
+  padding: 2.5rem 1rem;
+  color: var(--ink-2);
+  text-align: center;
+}
+.rw-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: .25rem;
+  border-radius: 50%;
+  background: var(--rw-fill-2);
+  color: var(--ink-3);
+}
+.rw-empty__title { margin: 0; color: var(--ink); font-size: 1rem; font-weight: 650; letter-spacing: -.01em; }
+.rw-empty__text { max-width: 34rem; margin: 0; font-size: .875rem; line-height: 1.55; text-wrap: pretty; }
+.rw-empty__actions { justify-content: center; margin-top: .5rem; }
+.rw-empty--bordered { border: 1px dashed var(--hair); border-radius: var(--rw-r-card); }
+.rw-empty--compact { gap: .375rem; padding: 1.25rem 1rem; }
+.rw-empty--compact .rw-empty__icon { width: 2.25rem; height: 2.25rem; }
+
+/* ── Load more ────────────────────────────────────────────────────
+ * A "next page" link that LoadMore's script turns into an in-place fetch, and
+ * a polite status line under it. Without the script the link is a link.
+ */
+.rw-load-more { display: grid; justify-items: center; gap: .5rem; padding-block: 1rem; }
+.rw-load-more__status {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: .8125rem;
+  font-variant-numeric: tabular-nums;
+}
+.rw-load-more__status[data-state="error"] { color: var(--rw-danger); }
+.rw-load-more__status:empty { display: none; }
+
+/* ── Table ────────────────────────────────────────────────────────
+ * .rw-table on a real <table>, inside a .rw-table-wrap: an opaque card that
+ * scrolls sideways when the table is wider than the screen. Hairline rows,
+ * a filled head, a row tint under the pointer.
+ *   .is-num        end-aligned tabular figures (td or th)
+ *   .is-actions    a shrink-to-fit end column
+ *   <small> in a cell, or .rw-table__sub, is a second line
+ *   th[aria-sort] + .rw-table__sort (a link or a button) for sortable heads
+ *   --compact      tighter rows
+ *   --stack        under 40rem of wrap width each row becomes a card; cells
+ *                  show their data-label before the value
+ *   --sticky       the head sticks under the site header (--site-head). It
+ *                  needs a wrap that does not scroll: use .rw-table-wrap--open.
+ */
+.rw-table-wrap {
+  container: rw-table / inline-size;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid var(--hair);
+  border-radius: var(--rw-r-card);
+  background: var(--panel);
+  box-shadow: var(--rw-e1);
+}
+/* An open wrap does not clip, so the head and the last row round their own
+ * outer corners (1px inside the wrap's border). */
+.rw-table-wrap--open { overflow: visible; }
+.rw-table-wrap--open thead th:first-child { border-start-start-radius: calc(var(--rw-r-card) - 1px); }
+.rw-table-wrap--open thead th:last-child { border-start-end-radius: calc(var(--rw-r-card) - 1px); }
+.rw-table-wrap--open tbody > tr:last-child > :first-child { border-end-start-radius: calc(var(--rw-r-card) - 1px); }
+.rw-table-wrap--open tbody > tr:last-child > :last-child { border-end-end-radius: calc(var(--rw-r-card) - 1px); }
+.rw-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--ink);
+  font-size: .875rem;
+  line-height: 1.4;
+}
+.rw-table caption {
+  padding: .75rem .875rem .25rem;
+  caption-side: top;
+  color: var(--ink);
+  font-weight: 650;
+  text-align: start;
+}
+.rw-table :is(th, td) {
+  padding: .625rem .875rem;
+  border-top: 1px solid var(--hair-soft);
+  text-align: start;
+  vertical-align: middle;
+}
+.rw-table thead th {
+  border-top: 0;
+  background: var(--rw-fill);
+  color: var(--ink-2);
+  font-size: .75rem;
+  font-weight: 650;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+.rw-table tbody > tr:first-child > * { border-top-color: var(--hair); }
+.rw-table tbody th { font-weight: 650; }
+@media (hover: hover) {
+  .rw-table tbody > tr:hover > * { background: var(--rw-fill); }
+}
+.rw-table :is(td, th) small,
+.rw-table .rw-table__sub {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-3);
+  font-size: .75rem;
+  font-weight: 400;
+}
+.rw-table .is-num { text-align: end; font-variant-numeric: tabular-nums; }
+.rw-table .is-actions { width: 1%; text-align: end; white-space: nowrap; }
+.rw-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  margin: -.25rem -.375rem;
+  padding: .25rem .375rem;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .rw-table__sort:hover { background: var(--rw-fill-2); color: var(--ink); }
+}
+.rw-table__sort > .rw-icon { opacity: .45; }
+.rw-table th[aria-sort="ascending"] .rw-table__sort,
+.rw-table th[aria-sort="descending"] .rw-table__sort { color: var(--ink); }
+.rw-table th[aria-sort="ascending"] .rw-table__sort > .rw-icon,
+.rw-table th[aria-sort="descending"] .rw-table__sort > .rw-icon { opacity: 1; }
+.rw-table th[aria-sort="ascending"] .rw-table__sort > .rw-icon { rotate: 180deg; }
+.rw-table--compact :is(th, td) { padding: .4rem .625rem; }
+/* Rows scroll under a sticky head, so it has to be opaque: the panel with the
+ * head's fill laid over it. */
+.rw-table--sticky thead th {
+  position: sticky;
+  top: var(--site-head);
+  z-index: 1;
+  background-color: var(--panel);
+  background-image: linear-gradient(var(--rw-fill), var(--rw-fill));
+}
+@container rw-table (width < 40rem) {
+  .rw-table--stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .rw-table--stack,
+  .rw-table--stack tbody { display: block; }
+  .rw-table--stack tbody > tr {
+    display: grid;
+    gap: .25rem;
+    padding: .75rem .875rem;
+    border-top: 1px solid var(--hair-soft);
+  }
+  .rw-table--stack tbody > tr:first-child { border-top: 0; }
+  /* Label in the first column, the cell's content stacked in the second,
+   * against the end edge: a value and its second line stay together. */
+  .rw-table--stack tbody > tr > * {
+    display: grid;
+    grid-template-columns: minmax(5.5rem, max-content) minmax(0, 1fr);
+    column-gap: .75rem;
+    align-items: baseline;
+    justify-items: end;
+    padding: 0;
+    border: 0;
+    text-align: end;
+  }
+  .rw-table--stack tbody > tr > *::before {
+    content: attr(data-label);
+    grid-row: 1 / span 4;
+    align-self: start;
+    justify-self: start;
+    color: var(--ink-3);
+    font-size: .75rem;
+    font-weight: 600;
+    line-height: 1.6;
+    text-align: start;
+  }
+  .rw-table--stack tbody > tr > :is(td, th) small { margin-top: 0; }
+  /* A cell with no label (an actions column) is a plain row from the start. */
+  .rw-table--stack tbody > tr > :is(:not([data-label]), [data-label=""]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    padding-top: .25rem;
+    text-align: start;
+  }
+  .rw-table--stack tbody > tr > :is(:not([data-label]), [data-label=""])::before { content: none; }
+  .rw-table--stack .is-actions { width: auto; }
+}
+
+/* ── Page head ────────────────────────────────────────────────────
+ * The top of a content page: an eyebrow in the accent, the h1, a lead, and a
+ * row for whatever follows (chips, actions, a table of contents).
+ */
+.rw-page-head {
+  display: grid;
+  gap: .6rem;
+  padding: clamp(1.75rem, 5vw, 3.25rem) 0 1.5rem;
+}
+.rw-page-head__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 0;
+  color: var(--accent);
+  font-size: .8rem;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.rw-page-head__title {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.9rem, 1.2rem + 3vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.rw-page-head__lead {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.rw-page-head__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: .4rem; }
+
+/* ── Disclosure ───────────────────────────────────────────────────
+ * On a real <details>: opens with no script, finds its text with the browser's
+ * find-in-page, and groups into an accordion with the name attribute. The
+ * chevron is drawn by the summary, so markup needs no icon. --plain drops the
+ * card for a list of hairline-separated rows.
+ */
+.rw-disclosure {
+  border: 1px solid var(--hair);
+  border-radius: var(--rw-r-card);
+  background: var(--panel);
+  color: var(--ink);
+}
+.rw-disclosure + .rw-disclosure { margin-top: .5rem; }
+.rw-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  padding: .75rem 1rem;
+  border-radius: calc(var(--rw-r-card) - 1px);
+  list-style: none;
+  font-weight: 650;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rw-disclosure > summary::-webkit-details-marker { display: none; }
+.rw-disclosure > summary::after {
+  content: "";
+  flex: none;
+  width: .45rem;
+  height: .45rem;
+  margin-inline-start: auto;
+  margin-block-start: -.2rem;
+  border-inline-end: 1.8px solid var(--ink-3);
+  border-block-end: 1.8px solid var(--ink-3);
+  rotate: 45deg;
+  transition: rotate var(--rw-dur-2) var(--rw-ease), margin var(--rw-dur-2) var(--rw-ease);
+}
+.rw-disclosure[open] > summary::after { rotate: 225deg; margin-block-start: .2rem; }
+@media (hover: hover) {
+  .rw-disclosure > summary:hover { background: var(--rw-fill); }
+}
+.rw-disclosure[open] > summary { border-end-start-radius: 0; border-end-end-radius: 0; }
+/* Meta sits at the end, beside the chevron. */
+.rw-disclosure__meta { margin-inline-start: auto; color: var(--ink-3); font-size: .8125rem; font-weight: 500; }
+.rw-disclosure > summary:has(.rw-disclosure__meta)::after { margin-inline-start: .25rem; }
+.rw-disclosure__body {
+  display: grid;
+  gap: .75rem;
+  padding: 0 1rem 1rem;
+  color: var(--ink-2);
+  font-size: .9375rem;
+  line-height: 1.55;
+}
+.rw-disclosure--plain {
+  border: 0;
+  border-top: 1px solid var(--hair-soft);
+  border-radius: 0;
+  background: transparent;
+}
+.rw-disclosure--plain + .rw-disclosure--plain { margin-top: 0; }
+.rw-disclosure--plain > summary { padding-inline: .25rem; border-radius: 6px; }
+.rw-disclosure--plain > .rw-disclosure__body { padding-inline: .25rem; }
+/* The open animation, where the browser can size to auto. */
+@supports (interpolate-size: allow-keywords) {
+  .rw-disclosure { interpolate-size: allow-keywords; }
+  .rw-disclosure::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size var(--rw-dur-3) var(--rw-ease), content-visibility var(--rw-dur-3) allow-discrete;
+  }
+  .rw-disclosure[open]::details-content { block-size: auto; }
+}
+
+/* ── Callout ──────────────────────────────────────────────────────
+ * A note set apart from the text around it. data-tone: info (the accent,
+ * the default), ok, warn, danger. The fill is the tone at 8% over the panel,
+ * opaque, so the text keeps its contrast wherever the callout sits.
+ */
+.rw-callout {
+  --rw-tone: var(--accent);
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  padding: .85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--rw-tone) 32%, transparent);
+  border-radius: calc(var(--rw-r-card) - 2px);
+  background: color-mix(in srgb, var(--rw-tone) 8%, var(--panel));
+  color: var(--ink);
+  font-size: .9rem;
+  line-height: 1.55;
+}
+.rw-callout[data-tone="ok"] { --rw-tone: var(--rw-ok); }
+.rw-callout[data-tone="warn"] { --rw-tone: var(--rw-warn); }
+.rw-callout[data-tone="danger"] { --rw-tone: var(--rw-danger); }
+.rw-callout__icon { flex: none; margin-top: .15rem; color: var(--rw-tone); }
+.rw-callout__body { display: grid; gap: .35rem; min-width: 0; }
+.rw-callout__body > :is(p, ul, ol) { margin: 0; }
+.rw-callout__title { display: block; font-weight: 700; }
+.rw-callout a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
 /* ── Focus ────────────────────────────────────────────────────────
  * One ring for every control here. Fields draw their own (a border plus a
  * halo), so they opt out — two rings on one element reads as a bug. :where()
  * keeps the selector list at zero weight, so a page's own focus style wins.
  */
-:where(.rw-btn, .rw-chip, .rw-switch, .rw-card--interactive, .rw-range):focus-visible {
+:where(.rw-btn, .rw-chip, .rw-switch, .rw-card--interactive, .rw-range, a.rw-userchip, .rw-table__sort):focus-visible {
+  outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
+  outline-offset: var(--rw-focus-o);
+}
+/* A chip that wraps an input rings when the input has keyboard focus. */
+:where(.rw-chip):has(> input:focus-visible) {
   outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
   outline-offset: var(--rw-focus-o);
 }
 /* Segments and rows sit flush against their neighbours, so their ring is drawn
  * just inside the edge where it cannot overlap the next one. */
-:where(.rw-seg__item, .rw-card__row):focus-visible {
+:where(.rw-seg__item, .rw-card__row, .rw-disclosure > summary):focus-visible {
   outline: var(--rw-focus-w) solid var(--rw-focus, var(--accent));
   outline-offset: -2px;
 }
@@ -631,11 +1189,19 @@ select.rw-field:dir(rtl) {
 @media (prefers-contrast: more) {
   .rw-card,
   .rw-field,
-  .rw-chip { border-color: color-mix(in srgb, var(--ink) 45%, transparent); }
+  .rw-chip,
+  .rw-table-wrap,
+  .rw-disclosure { border-color: color-mix(in srgb, var(--ink) 45%, transparent); }
+  .rw-callout { border-color: var(--rw-tone); }
   .rw-btn:not(.rw-btn--primary, .rw-btn--plain) { border-color: color-mix(in srgb, var(--ink) 35%, transparent); }
   .rw-switch { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 45%, transparent); }
 }
 @media (forced-colors: active) {
+  /* Status tones carry meaning, and a skeleton is only a shape: keep both. */
+  .rw-dot { forced-color-adjust: none; }
+  .rw-skeleton { background: GrayText; animation: none; }
+  .rw-callout,
+  .rw-table-wrap { border-color: CanvasText; }
   .rw-btn,
   .rw-chip,
   .rw-seg,
@@ -657,5 +1223,10 @@ select.rw-field:dir(rtl) {
   .rw-progress:indeterminate { background: var(--accent); animation: rw-pulse 1.6s ease-in-out infinite; }
   .rw-spinner,
   .rw-btn[aria-busy="true"]::before { animation-duration: 1.6s; }
+  /* Skeletons stop sweeping and breathe in place; a live dot stops pulsing. */
+  .rw-skeleton { background: var(--rw-fill-2); animation: rw-pulse 2s ease-in-out infinite; }
+  .rw-dot[data-pulse] { animation: none; }
+  .rw-disclosure::details-content { transition: none; }
+  .rw-disclosure > summary::after { transition: none; }
 }
 @keyframes rw-pulse { 50% { opacity: .35; } }

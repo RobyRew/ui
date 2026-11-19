@@ -1,0 +1,25 @@
+---
+/** Disclosure — a titled section that opens and closes, on a real <details>:
+ *  no script, found by find-in-page, and an accordion when several share a
+ *  `name` (one open at a time). `plain` drops the card for hairline rows. */
+import Icon from './Icon.astro';
+import type { IconName } from '../icons.js';
+
+interface Props {
+  title: string;
+  open?: boolean;
+  /** Same name on several = only one open at a time. */
+  name?: string;
+  /** Quiet text at the end of the title row ("3 files"). */
+  meta?: string;
+  icon?: IconName;
+  plain?: boolean;
+  id?: string;
+  class?: string;
+}
+const { title, open = false, name, meta, icon, plain = false, id, class: cls } = Astro.props;
+---
+<details class:list={['rw-disclosure', { 'rw-disclosure--plain': plain }, cls]} open={open} name={name} id={id}>
+  <summary>{icon && <Icon name={icon} size={18} />}<span>{title}</span>{meta && <span class="rw-disclosure__meta">{meta}</span>}</summary>
+  <div class="rw-disclosure__body"><slot /></div>
+</details>

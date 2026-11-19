@@ -1,0 +1,31 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import LikeButton from '@robyrew/ui/components/LikeButton.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="like-button" title="LikeButton" lead="A heart and a count. A press flips it at once and dispatches rw:like; setLike() puts the server's numbers back. With an action it is a one-button POST form (value 1 to like, 0 to unlike).">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="LikeButton">
+        <div class="pv-swatch-row">
+          <LikeButton count={12} />
+          <LikeButton count={248} liked />
+          <LikeButton count={12840} />
+          <LikeButton count={0} />
+        </div>
+        <h3 class="pv-h">Plain, for rows and comments</h3>
+        <div class="pv-surface">
+          <div class="pv-swatch-row">
+            <LikeButton count={3} plain />
+            <LikeButton count={41} plain liked />
+          </div>
+        </div>
+        <h3 class="pv-h">A form, taken over by the page</h3>
+        <div data-pv-takeover>
+          <LikeButton count={7} action="/kit/like-button/" fields={{ release: '1.2.52.400' }} label="Like this build" />
+        </div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

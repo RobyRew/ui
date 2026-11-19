@@ -1,0 +1,27 @@
+---
+/** PageHead — the top of a content page: an eyebrow in the accent, the title,
+ *  a lead, and a row for what follows (the default slot: chips, actions, a
+ *  table of contents). From chat-converter's .page-head. */
+import Icon from './Icon.astro';
+import type { IconName } from '../icons.js';
+
+interface Props {
+  title: string;
+  eyebrow?: string;
+  lead?: string;
+  /** An icon before the eyebrow. */
+  icon?: IconName;
+  /** The title's heading level. Default 1. */
+  level?: 1 | 2;
+  class?: string;
+}
+const { title, eyebrow, lead, icon, level = 1, class: cls } = Astro.props;
+const H = `h${level}` as 'h1' | 'h2';
+---
+<header class:list={['rw-page-head', cls]}>
+  {eyebrow && <p class="rw-page-head__eyebrow">{icon && <Icon name={icon} size={16} />}{eyebrow}</p>}
+  <H class="rw-page-head__title">{title}</H>
+  {lead && <p class="rw-page-head__lead">{lead}</p>}
+  {Astro.slots.has('lead') && <div class="rw-page-head__lead"><slot name="lead" /></div>}
+  {Astro.slots.has('default') && <div class="rw-page-head__meta"><slot /></div>}
+</header>

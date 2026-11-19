@@ -1,0 +1,35 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import SplitButton from '@robyrew/ui/components/SplitButton.astro';
+import { THEMES } from '../../lib/kit';
+import type { Mirror } from '@robyrew/ui';
+const mirrors: Mirror[] = [
+  { label: 'Spotify CDN', href: '#', status: 'ok', hint: 'Official · checked 4 min ago', tail: '98.4 MB' },
+  { label: 'RobyRew archive', href: '#', status: 'ok', hint: 'R2 copy, same SHA-256', tail: '98.4 MB' },
+  { label: 'LoadSpot (amd64fox)', href: '#', status: 'warn', hint: 'Slow responses today', external: true },
+];
+---
+<Kit slug="split-button" title="SplitButton" lead="A primary action and a menu of alternatives, joined: the download with its mirrors, each with a status dot and a line such as a size or a last check. The chevron opens a Menu that hangs from it on a wide screen and is a bottom sheet on a phone.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="SplitButton">
+        <div class="pv-swatch-row">
+          <SplitButton id={`pv-dl-a-${t}`} label="Download" icon="download" href="#" mainLabel="Download Spotify 1.2.52 for Windows x64" title="SHA-256 9f2c…e41a" menuTitle="Download from" items={mirrors} />
+          <SplitButton id={`pv-dl-b-${t}`} label="Download" icon="download" href="#" primary={false} size="sm" items={mirrors} />
+        </div>
+        <h3 class="pv-h">Official link expired, a dead mirror</h3>
+        <SplitButton id={`pv-dl-c-${t}`} label="Download" icon="download" href="#" items={[
+          { label: 'Spotify CDN', status: 'danger', hint: 'Link expired 3 days ago', disabled: true },
+          { label: 'RobyRew archive', href: '#', status: 'ok', hint: 'R2 copy', tail: '102 MB' },
+          'separator',
+          { label: 'Unchecked mirror', href: '#', status: 'unknown', hint: 'Not probed yet' },
+        ]} />
+        <h3 class="pv-h">Nothing to download</h3>
+        <SplitButton id={`pv-dl-d-${t}`} label="Unavailable" icon="download" items={[{ label: 'Spotify CDN', status: 'danger', hint: 'Removed by Spotify', disabled: true }]} />
+        <h3 class="pv-h">Block, in a narrow card</h3>
+        <div class="pv-surface"><SplitButton id={`pv-dl-e-${t}`} label="Download for Android" icon="android" href="#" block size="lg" items={mirrors} /></div>
+      </Pane>
+    ))}
+  </div>
+</Kit>

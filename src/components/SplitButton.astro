@@ -1,0 +1,83 @@
+---
+/** SplitButton — a primary action and a menu of alternatives, joined: the
+ *  download button with its mirrors (official CDN, an own copy, a third-party
+ *  mirror), each with a status dot and a line such as a size or "expired".
+ *
+ *  The main half is a link (or a disabled span when there is nothing to
+ *  download); the chevron opens a Menu that hangs from it on a wide screen
+ *  and is a bottom sheet on a phone. A mirror without an href is listed but
+ *  disabled. */
+import './Downloads.css';
+import Menu from './Menu.astro';
+import Icon from './Icon.astro';
+import { uid } from '../behaviors/core.js';
+import type { IconName } from '../icons.js';
+import type { MenuEntry, Mirror, Status } from '../index';
+
+interface Props {
+  label: string;
+  /** The main action. Without it the main half is shown disabled. */
+  href?: string | null;
+  /** The download attribute for the main link (true, or a file name). */
+  download?: boolean | string;
+  icon?: IconName;
+  /** A fuller accessible name for the main link ("Download 1.2.3 for Windows"). */
+  mainLabel?: string;
+  /** A tooltip on the main half (a checksum). */
+  title?: string;
+  items: Array<Mirror | 'separator' | { heading: string }>;
+  /** Name of the group and of the menu. */
+  menuLabel?: string;
+  /** A heading in the menu (shown on the phone sheet too). */
+  menuTitle?: string;
+  /** The accent fill (default) or a plain one. */
+  primary?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  block?: boolean;
+  id?: string;
+  labels?: { more?: string; close?: string; status?: Partial<Record<Status, string>> };
+  class?: string;
+}
+const {
+  label,
+  href,
+  download,
+  icon,
+  mainLabel,
+  title,
+  items,
+  menuLabel,
+  menuTitle,
+  primary = true,
+  size = 'md',
+  block = false,
+  id = uid('rw-split'),
+  labels = {},
+  class: cls,
+} = Astro.props;
+const menuId = `${id}-menu`;
+const btn = ['rw-btn', { 'rw-btn--primary': primary, 'rw-btn--sm': size === 'sm', 'rw-btn--lg': size === 'lg' }];
+const entries: MenuEntry[] = items.map((it) =>
+  typeof it === 'string' || 'heading' in it
+    ? it
+    : { label: it.label, href: it.disabled ? undefined : it.href ?? undefined, dot: it.status, hint: it.hint, tail: it.tail, disabled: it.disabled || !it.href, download: it.download, external: it.external, value: it.value },
+);
+const more = labels.more ?? 'More download options';
+const dl = download === true ? '' : download || undefined;
+---
+<div class:list={['rw-split', { 'rw-split--sm': size === 'sm', 'rw-split--lg': size === 'lg', 'rw-split--block': block }, cls]} role="group" aria-label={menuLabel ?? label} id={id}>
+  {href
+    ? <a class:list={[...btn, 'rw-split__main']} href={href} download={dl} title={title} aria-label={mainLabel}>{icon && <Icon name={icon} size={17} />}<span>{label}</span></a>
+    : <span class:list={[...btn, 'rw-split__main']} aria-disabled="true" title={title}>{icon && <Icon name={icon} size={17} />}<span>{label}</span></span>}
+  <button
+    type="button"
+    class:list={[...btn, 'rw-btn--icon', 'rw-split__more']}
+    commandfor={menuId}
+    command="show-modal"
+    aria-haspopup="menu"
+    aria-expanded="false"
+    aria-controls={menuId}
+    aria-label={more}
+  ><Icon name="chevronDown" size={16} /></button>
+  <Menu id={menuId} label={menuLabel ?? more} title={menuTitle} items={entries} width="lg" statusLabels={labels.status} labels={{ close: labels.close }} />
+</div>

@@ -1,0 +1,19 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Callout from '@robyrew/ui/components/Callout.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="callout" title="Callout" lead="A note set apart from the text around it, from chat-converter: info in the accent, or a status tone. The fill is the tone at 8% over the panel, opaque, so the text keeps its contrast wherever it sits.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="Callout">
+        <Callout>Official links are signed and expire; the archive keeps a copy of every build it has seen.</Callout>
+        <Callout tone="ok" title="Checksum matches">The archive copy has the same SHA-256 as Spotify's own file.</Callout>
+        <Callout tone="warn" title="Mirror is slow">LoadSpot answered in 9 s at the last check. <a href="#">Use the archive copy</a>.</Callout>
+        <Callout tone="danger" title="Link expired" role="status">Spotify no longer serves 1.2.12 for this platform.</Callout>
+        <Callout icon={false}>No icon, for a quieter aside.</Callout>
+      </Pane>
+    ))}
+  </div>
+</Kit>

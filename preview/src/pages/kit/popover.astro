@@ -1,0 +1,46 @@
+---
+import Kit from '../../layouts/Kit.astro';
+import Pane from '../../components/Pane.astro';
+import Popover from '@robyrew/ui/components/Popover.astro';
+import FilterChip from '@robyrew/ui/components/FilterChip.astro';
+import { THEMES } from '../../lib/kit';
+---
+<Kit slug="popover" title="Popover" lead="An opaque panel opened by a button. On a wide screen it hangs from that button (end-aligned, or above it when there is no room below, and it follows through scroll and resize); under 40rem it is a bottom sheet you can drag down. Escape, a click outside and the ✕ close it, and focus goes back to the button.">
+  <div class="pv-panes">
+    {THEMES.map((t) => (
+      <Pane theme={t} title="Popover">
+        <div class="pv-surface">
+          <h3>Anchored panels</h3>
+          <div class="rw-actions">
+            <button class="rw-btn" type="button" commandfor={`pv-pop-filters-${t}`} command="show-modal" aria-haspopup="dialog" aria-expanded="false" aria-controls={`pv-pop-filters-${t}`}>Filters</button>
+            <button class="rw-btn rw-btn--primary" type="button" commandfor={`pv-pop-form-${t}`} command="show-modal" aria-haspopup="dialog" aria-expanded="false" aria-controls={`pv-pop-form-${t}`}>Report a problem</button>
+            <button class="rw-btn rw-btn--plain" type="button" commandfor={`pv-pop-start-${t}`} command="show-modal" aria-haspopup="dialog" aria-expanded="false" aria-controls={`pv-pop-start-${t}`}>Start-aligned</button>
+          </div>
+          <p class="pv-note">Without script, a browser with invoker commands still opens each one as a centred panel (or a sheet on a phone).</p>
+        </div>
+        <Popover id={`pv-pop-filters-${t}`} label="Filters" title="Filters" width="lg" theme={t}>
+          <div class="rw-filters rw-filters--wrap">
+            <FilterChip label="Windows" name="p" value="win" icon="windows" checked />
+            <FilterChip label="macOS" name="p" value="mac" icon="apple" />
+            <FilterChip label="Linux" name="p" value="linux" icon="linux" />
+            <FilterChip label="Android" name="p" value="android" icon="android" count={41} />
+          </div>
+          <p class="pv-note">Any content: a filter group, details, a form.</p>
+        </Popover>
+        <Popover id={`pv-pop-form-${t}`} label="Report a problem" title="Report a problem" width="lg" theme={t}>
+          <form method="dialog" class="pv-stack">
+            <label class="rw-label" for={`pv-pop-field-${t}`}>What went wrong?</label>
+            <textarea class="rw-field rw-field--grow" id={`pv-pop-field-${t}`} rows="3" data-autofocus placeholder="The download stopped at 80%…"></textarea>
+            <div class="rw-actions rw-actions--end">
+              <button class="rw-btn" value="cancel">Cancel</button>
+              <button class="rw-btn rw-btn--primary" value="send">Send</button>
+            </div>
+          </form>
+        </Popover>
+        <Popover id={`pv-pop-start-${t}`} label="About this build" width="md" align="start" theme={t}>
+          <p class="pv-note">No title: the label names it. data-align="start" lines its start edge up with the button.</p>
+        </Popover>
+      </Pane>
+    ))}
+  </div>
+</Kit>
